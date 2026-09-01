@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "ADLD Chats Web",
+    "tagline": "Stay Connected"
+  },
+  "nav": {
+    "home": "Home",
+    "chat": "Chat",
+    "friends": "Friends",
+    "map": "ADLD Maps",
+    "camera": "Camera",
+    "stories": "Stories",
+    "memories": "Memories",
+    "calls": "Calls",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "settings": "Settings",
+    "newChat": "New Chat"
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "signInContinue": "Sign in to continue to ADLD Chats Web",
+    "username": "Username",
+    "usernamePlaceholder": "Enter your username",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot password?",
+    "login": "Login",
+    "noAccount": "Don't have an account?",
+    "createOne": "Create one",
+    "register": "Register",
+    "displayName": "Display Name",
+    "displayNamePlaceholder": "Enter your display name",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "connecting": "Connecting..."
+  },
+  "home": {
+    "greeting": "Hey, {{name}} 👋",
+    "readySync": "Ready to sync up?",
+    "storiesStatus": "Stories & Status",
+    "seeAll": "See All",
+    "addStory": "Add Story",
+    "activeChats": "Active Chats",
+    "snap": "ADLD PHOTO",
+    "flashbacks": "Flashbacks"
+  },
+  "chat": {
+    "searchChats": "Search chats...",
+    "messagePlaceholder": "Message...",
+    "typing": "typing...",
+    "today": "Today",
+    "justNow": "Just now",
+    "online": "Online",
+    "lastSeen": "Last seen {{time}}"
+  },
+  "map": {
+    "searchLocation": "Search location...",
+    "ghostMode": "Ghost Mode",
+    "friendsNearby": "{{count}} friends nearby",
+    "withinMiles": "Within {{distance}} miles",
+    "lastSeenAgo": "Last seen {{time}} ago",
+    "activeNow": "Active now"
+  },
+  "camera": {
+    "holdForVideo": "Hold for video",
+    "none": "None"
+  },
+  "memories": {
+    "title": "Memories",
+    "description": "Your digital vault of late nights and glowing moments.",
+    "all": "All",
+    "favorites": "Favorites",
+    "addMemory": "Add Memory"
+  },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "activeStreak": "Active Streak",
+    "connections": "Connections",
+    "highlights": "Highlights",
+    "recentActivity": "Recent Activity",
+    "media": "Media",
+    "mutuals": "Mutuals"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your ADLD Chats experience",
+    "account": "Account",
+    "personalInfo": "Personal Information",
+    "personalInfoDesc": "Update your name, username, and bio",
+    "linkedAccounts": "Linked Accounts",
+    "linkedAccountsDesc": "Manage social logins and connected apps",
+    "privacy": "Privacy",
+    "ghostMode": "Ghost Mode",
+    "ghostModeDesc": "Hide your online status and last seen from everyone",
+    "beta": "Beta",
+    "blockedContacts": "Blocked Contacts",
+    "blockedContactsDesc": "Manage users you've blocked",
+    "notifications": "Notifications",
+    "pushNotifications": "Push Notifications",
+    "pushNotificationsDesc": "Receive alerts for new messages",
+    "preferences": "Preferences",
+    "appearance": "Appearance",
+    "light": "Light",
+    "dark": "Dark",
+    "language": "Language",
+    "dangerZone": "Danger Zone",
+    "deleteAccount": "Delete Account"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "days": "Days"
+  }
+}

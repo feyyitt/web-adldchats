@@ -1,0 +1,251 @@
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { motion, AnimatePresence } from 'framer-motion'
+import { authService } from '@/services/authService'
+import { useAuthStore } from '@/stores/authStore'
+import AdldLogo from '@/components/common/AdldLogo'
+import GuestLoginModal from '@/components/auth/GuestLoginModal'
+
+export default function LoginPage() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { setUser, setProfile } = useAuthStore()
+
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [isGuestModalOpen, setIsGuestModalOpen] = useState(false)
+
+  // Welcome Login Animation State
+  const [isLoggingInAnim, setIsLoggingInAnim] = useState(false)
+  const [welcomeName, setWelcomeName] = useState('')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setErrorMsg(null)
+
+    try {
+      const data = await authService.login(username, password)
+      if (data.user) {
+        setUser(data.user)
+        const profile = await authService.getProfile(data.user.id)
+        if (profile) setProfile(profile)
+
+        const name = profile?.display_name || data.user.user_metadata?.display_name || username
+        setWelcomeName(name)
+        setIsLoggingInAnim(true)
+
+        // 1.3s smooth welcome transition
+        setTimeout(() => {
+          setIsLoggingInAnim(false)
+          navigate('/')
+        }, 1300)
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Login failed'
+      setErrorMsg(message)
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <div className="w-full">
+        <div className="w-full glass-panel rounded-3xl p-7 md:p-8 border border-white/15 shadow-2xl space-y-6">
+          {/* Official ADLD Logo */}
+          <div className="flex justify-center mb-2">
+            <AdldLogo size="lg" showText={false} />
+          </div>
+
+          {/* Title */}
+          <div className="text-center">
+            <h1 className="font-display text-headline-md text-on-surface font-bold">
+              {t('auth.welcomeBack')}
+            </h1>
+            <p className="font-body text-body-md text-on-surface-variant mt-1">
+              Masuk untuk melanjutkan ke ADLD Chats
+            </p>
+          </div>
+
+          {/* Error Alert */}
+          {errorMsg && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-body-md text-center font-medium"
+            >
+              {errorMsg}
+            </motion.div>
+          )}
+
+          {/* Quick Demo Credentials Banner */}
+          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-on-surface text-xs flex items-center justify-between gap-2 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-emerald-400 text-[20px]">key</span>
+              <div>
+                <p className="font-bold text-emerald-400">Akun Demo Sementara:</p>
+                <p className="text-on-surface-variant font-mono mt-0.5">User: <strong className="text-white">faith</strong> | Pass: <strong className="text-white">faith123</strong></p>
+              </div>
+            </div>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={() => {
+                setUsername('faith')
+                setPassword('faith123')
+              }}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-[11px] transition-all shadow-md flex-shrink-0"
+            >
+              Auto Fill
+            </motion.button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Username */}
+            <div>
+              <label className="block font-body text-label-md text-on-surface mb-2 font-semibold">
+                Nama Pengguna
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+                  person
+                </span>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Masukkan nama pengguna"
+                  className="w-full bg-zinc-900/80 border border-white/10 text-on-surface font-body text-body-md rounded-2xl pl-11 pr-4 py-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-on-surface-variant/40"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="font-body text-label-md text-on-surface font-semibold">
+                  Kata Sandi
+                </label>
+                <Link
+                  to="/forgot-password"
+                  className="font-body text-label-sm text-emerald-400 hover:underline transition-colors"
+                >
+                  Lupa kata sandi?
+                </Link>
+              </div>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+                  lock
+                </span>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Masukkan kata sandi"
+                  className="w-full bg-zinc-900/80 border border-white/10 text-on-surface font-body text-body-md rounded-2xl pl-11 pr-11 py-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-on-surface-variant/40"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-white transition-colors"
+                  title={showPassword ? 'Hide Password' : 'Show Password'}
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-display text-label-md py-3.5 rounded-2xl transition-all shadow-lg font-bold tracking-wider uppercase active:scale-98 disabled:opacity-50 mt-2"
+            >
+              {isLoading ? t('common.loading') : 'MASUK'}
+            </motion.button>
+          </form>
+
+          {/* Guest Catalog Quick Entry Button */}
+          <div>
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-white/10"></div>
+              <span className="flex-shrink mx-3 text-[11px] text-on-surface-variant/60 font-semibold uppercase">Atau</span>
+              <div className="flex-grow border-t border-white/10"></div>
+            </div>
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              type="button"
+              onClick={() => setIsGuestModalOpen(true)}
+              className="w-full py-3 px-4 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700/90 border border-white/15 text-emerald-400 font-display text-label-md font-bold flex items-center justify-center gap-2 transition-all shadow-md mt-2"
+            >
+              <span className="material-symbols-outlined text-[20px]">storefront</span>
+              <span>Masuk sebagai Tamu (Lihat Katalog)</span>
+            </motion.button>
+          </div>
+
+          {/* Sign Up Link */}
+          <p className="text-center font-body text-body-md text-on-surface-variant pt-2 border-t border-white/10">
+            Belum punya akun?{' '}
+            <Link
+              to="/register"
+              className="text-emerald-400 hover:underline transition-colors font-bold"
+            >
+              Buat akun
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Guest Login Modal */}
+      <GuestLoginModal
+        isOpen={isGuestModalOpen}
+        onClose={() => setIsGuestModalOpen(false)}
+      />
+
+      {/* Full-Screen Welcome Login Transition Overlay */}
+      <AnimatePresence>
+        {isLoggingInAnim && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#09090b]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none"
+          >
+            {/* Animated Google Stitch Logo */}
+            <div className="relative mb-8 animate-bounce duration-1000">
+              <AdldLogo size="xl" showText={false} />
+            </div>
+
+            {/* Welcome Title */}
+            <h2 className="font-display text-headline-lg text-on-surface mb-2 font-bold">
+              Selamat Datang Kembali, <span className="text-emerald-400 font-extrabold">{welcomeName}</span>! 🔥
+            </h2>
+            <p className="font-body text-body-lg text-on-surface-variant mb-8">
+              Menyiapkan obrolan, peta 3D avatar & streak Anda...
+            </p>
+
+            {/* Progress Bar & Status */}
+            <div className="w-64 h-1.5 bg-zinc-800 rounded-full overflow-hidden relative shadow-inner mb-3">
+              <div className="h-full bg-emerald-500 animate-pulse w-full" />
+            </div>
+
+            <span className="font-body text-label-sm text-emerald-400 uppercase tracking-widest font-semibold">
+              Connecting to ADLD Network...
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}

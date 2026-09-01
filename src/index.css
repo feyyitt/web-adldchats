@@ -1,0 +1,409 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@import "tailwindcss";
+
+/* ================================================
+   ADLD CHATS — AUTHENTIC HUMAN-CRAFTED DESIGN SYSTEM
+   Clean, Modern, Animated, Zero AI Slop
+   ================================================ */
+
+@theme {
+  /* ---- Color Tokens (Modern Luxury Dark Theme) ---- */
+  --color-background: #09090b;
+  --color-surface: #09090b;
+  --color-surface-dim: #09090b;
+  --color-surface-bright: #27272a;
+  --color-surface-container-lowest: #121215;
+  --color-surface-container-low: #18181b;
+  --color-surface-container: #202023;
+  --color-surface-container-high: #27272a;
+  --color-surface-container-highest: #3f3f46;
+  --color-surface-variant: #3f3f46;
+  --color-surface-tint: #10b981;
+
+  --color-on-surface: #f4f4f5;
+  --color-on-surface-variant: #a1a1aa;
+  --color-on-background: #f4f4f5;
+
+  --color-primary: #ecfdf5;
+  --color-primary-container: #10b981;
+  --color-primary-fixed: #34d399;
+  --color-primary-fixed-dim: #10b981;
+  --color-on-primary: #064e3b;
+  --color-on-primary-container: #ffffff;
+  --color-on-primary-fixed: #022c22;
+  --color-on-primary-fixed-variant: #065f46;
+  --color-inverse-primary: #059669;
+
+  --color-secondary: #f97316;
+  --color-secondary-container: #ea580c;
+  --color-secondary-fixed: #ffedd5;
+  --color-secondary-fixed-dim: #fb923c;
+  --color-on-secondary: #431407;
+  --color-on-secondary-container: #ffffff;
+  --color-on-secondary-fixed: #2a0a00;
+  --color-on-secondary-fixed-variant: #9a3412;
+
+  --color-tertiary: #a855f7;
+  --color-tertiary-container: #9333ea;
+  --color-tertiary-fixed: #f3e8ff;
+  --color-tertiary-fixed-dim: #c084fc;
+  --color-on-tertiary: #3b0764;
+  --color-on-tertiary-container: #ffffff;
+  --color-on-tertiary-fixed: #240046;
+  --color-on-tertiary-fixed-variant: #6b21a8;
+
+  --color-error: #f87171;
+  --color-error-container: #991b1b;
+  --color-on-error: #450a0a;
+  --color-on-error-container: #fef2f2;
+
+  --color-outline: #52525b;
+  --color-outline-variant: #27272a;
+  --color-inverse-surface: #f4f4f5;
+  --color-inverse-on-surface: #18181b;
+
+  /* ---- Spacing Tokens ---- */
+  --spacing-unit: 4px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-gutter: 16px;
+
+  /* ---- Font Families ---- */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* ---- Typography Utilities ---- */
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 52px;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 38px;
+  --text-headline-lg--font-weight: 700;
+
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 30px;
+  --text-headline-md--font-weight: 600;
+
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-md--font-weight: 400;
+
+  --text-label-md: 14px;
+  --text-label-md--line-height: 20px;
+  --text-label-md--font-weight: 600;
+
+  --text-label-sm: 12px;
+  --text-label-sm--line-height: 16px;
+  --text-label-sm--font-weight: 500;
+}
+
+/* ================================================
+   GLOBAL BASE STYLES
+   ================================================ */
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #09090b;
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ================================================
+   CLEAN HUMAN-CRAFTED FROSTED GLASS PANELS
+   (No generic AI neon glows)
+   ================================================ */
+
+.glass-panel {
+  background: rgba(24, 24, 27, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.glass-panel-light {
+  background: rgba(24, 24, 27, 0.5);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Backwards compatibility aliases mapped to clean styles */
+.neon-glow-primary,
+.neon-glow-primary-intense,
+.neon-glow-secondary,
+.glow-effect {
+  box-shadow: 0 8px 25px -5px rgba(16, 185, 129, 0.25);
+}
+
+.neon-text-primary,
+.neon-text-secondary {
+  text-shadow: none;
+}
+
+.input-glow:focus,
+.neon-border-focus:focus-within {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  border-color: #10b981;
+}
+
+/* Floating animation for ADLD Maps Avatars */
+@keyframes adldmapFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-adldmap-float {
+  animation: adldmapFloat 3s ease-in-out infinite;
+}
+
+@keyframes fadeUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up-in {
+  animation: fadeUpIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ================================================
+   SCROLLBAR STYLING
+   ================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Safe area inset helpers for mobile notched displays */
+.safe-area-bottom {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+.safe-area-top {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+/* Modal Card anti-shrink rule to fix flexbox squeezing */
+.modal-card {
+  width: 90vw !important;
+  max-width: 460px !important;
+  min-width: 300px !important;
+  flex-shrink: 0 !important;
+}
+
+/* ================================================
+   CUSTOM TOGGLE SWITCH
+   ================================================ */
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: #27272a;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: white;
+  border-radius: 50%;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch.active {
+  background-color: #10b981;
+}
+
+.toggle-switch.active::after {
+  transform: translateX(20px);
+}
+
+/* ================================================
+   LIGHT MODE THEME OVERRIDES
+   ================================================ */
+html.light-mode {
+  color-scheme: light;
+}
+
+html.light-mode body {
+  background-color: #f4f4f5 !important;
+  color: #09090b !important;
+}
+
+html.light-mode .glass-panel {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #09090b !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+}
+
+html.light-mode .glass-panel-light {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+html.light-mode .text-on-surface {
+  color: #09090b !important;
+}
+
+html.light-mode .text-on-surface-variant {
+  color: #52525b !important;
+}
+
+html.light-mode .bg-surface-container-lowest {
+  background-color: #ffffff !important;
+}
+
+html.light-mode .bg-surface-container-low {
+  background-color: #fafafa !important;
+}
+
+html.light-mode .bg-surface-container {
+  background-color: #f4f4f5 !important;
+}
+
+html.light-mode .bg-surface-container-high {
+  background-color: #e4e4e7 !important;
+}
+
+html.light-mode .bg-surface-container-highest {
+  background-color: #e4e4e7 !important;
+}
+
+html.light-mode .border-white\/10,
+html.light-mode .border-white\/20,
+html.light-mode .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html.light-mode .bg-background {
+  background-color: #f4f4f5 !important;
+}
+
+html.light-mode .bg-surface {
+  background-color: #ffffff !important;
+}
+
+/* ================================================
+   MICRO-ANIMATIONS & SHIMMER GLEAM UTILITIES
+   ================================================ */
+
+@keyframes shimmerGleam {
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+  100% {
+    transform: translateX(200%) rotate(25deg);
+  }
+}
+
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%) rotate(25deg);
+  animation: shimmerGleam 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.glass-spotlight {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-spotlight:hover {
+  border-color: rgba(52, 211, 153, 0.4);
+  box-shadow: 0 12px 35px -10px rgba(16, 185, 129, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Safe Area Insets for Mobile Devices & iPhone Notches */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Touch target optimizations for mobile & tablet */
+@media (max-width: 768px) {
+  button, input, select, textarea {
+    min-height: 38px;
+  }
+}

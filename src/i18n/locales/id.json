@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "ADLD Chats Web",
+    "tagline": "Tetap Terhubung"
+  },
+  "nav": {
+    "home": "Beranda",
+    "chat": "Obrolan",
+    "friends": "Teman",
+    "map": "ADLD Maps",
+    "camera": "Kamera",
+    "stories": "Cerita",
+    "memories": "Kenangan",
+    "calls": "Panggilan",
+    "notifications": "Notifikasi",
+    "profile": "Profil",
+    "settings": "Pengaturan",
+    "newChat": "Obrolan Baru"
+  },
+  "auth": {
+    "welcomeBack": "Selamat datang kembali",
+    "signInContinue": "Masuk untuk melanjutkan ke ADLD Chats Web",
+    "username": "Nama Pengguna",
+    "usernamePlaceholder": "Masukkan nama pengguna",
+    "password": "Kata Sandi",
+    "passwordPlaceholder": "Masukkan kata sandi",
+    "forgotPassword": "Lupa kata sandi?",
+    "login": "Masuk",
+    "noAccount": "Belum punya akun?",
+    "createOne": "Buat akun",
+    "register": "Daftar",
+    "displayName": "Nama Tampilan",
+    "displayNamePlaceholder": "Masukkan nama tampilan",
+    "confirmPassword": "Konfirmasi Kata Sandi",
+    "confirmPasswordPlaceholder": "Masukkan ulang kata sandi",
+    "haveAccount": "Sudah punya akun?",
+    "signIn": "Masuk",
+    "connecting": "Menghubungkan..."
+  },
+  "home": {
+    "greeting": "Hai, {{name}} 👋",
+    "readySync": "Siap sync?",
+    "storiesStatus": "Cerita & Status",
+    "seeAll": "Lihat Semua",
+    "addStory": "Tambah Cerita",
+    "activeChats": "Obrolan Aktif",
+    "snap": "FOTO ADLD",
+    "flashbacks": "Kilas Balik"
+  },
+  "chat": {
+    "searchChats": "Cari obrolan...",
+    "messagePlaceholder": "Pesan...",
+    "typing": "mengetik...",
+    "today": "Hari ini",
+    "justNow": "Baru saja",
+    "online": "Online",
+    "lastSeen": "Terakhir terlihat {{time}}"
+  },
+  "map": {
+    "searchLocation": "Cari lokasi...",
+    "ghostMode": "Mode Hantu",
+    "friendsNearby": "{{count}} teman terdekat",
+    "withinMiles": "Dalam radius {{distance}} mil",
+    "lastSeenAgo": "Terakhir terlihat {{time}} lalu",
+    "activeNow": "Aktif sekarang"
+  },
+  "camera": {
+    "holdForVideo": "Tahan untuk video",
+    "none": "Tanpa"
+  },
+  "memories": {
+    "title": "Kenangan",
+    "description": "Brankas digital malam-malam panjang dan momen bercahayamu.",
+    "all": "Semua",
+    "favorites": "Favorit",
+    "addMemory": "Tambah Kenangan"
+  },
+  "profile": {
+    "editProfile": "Edit Profil",
+    "activeStreak": "Streak Aktif",
+    "connections": "Koneksi",
+    "highlights": "Sorotan",
+    "recentActivity": "Aktivitas Terbaru",
+    "media": "Media",
+    "mutuals": "Mutual"
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "description": "Kelola pengalaman ADLD Chats-mu",
+    "account": "Akun",
+    "personalInfo": "Informasi Pribadi",
+    "personalInfoDesc": "Perbarui nama, username, dan bio",
+    "linkedAccounts": "Akun Terhubung",
+    "linkedAccountsDesc": "Kelola login sosial dan aplikasi terhubung",
+    "privacy": "Privasi",
+    "ghostMode": "Mode Hantu",
+    "ghostModeDesc": "Sembunyikan status online dan terakhir terlihat dari semua orang",
+    "beta": "Beta",
+    "blockedContacts": "Kontak Diblokir",
+    "blockedContactsDesc": "Kelola pengguna yang telah kamu blokir",
+    "notifications": "Notifikasi",
+    "pushNotifications": "Notifikasi Push",
+    "pushNotificationsDesc": "Terima peringatan untuk pesan baru",
+    "preferences": "Preferensi",
+    "appearance": "Tampilan",
+    "light": "Terang",
+    "dark": "Gelap",
+    "language": "Bahasa",
+    "dangerZone": "Zona Bahaya",
+    "deleteAccount": "Hapus Akun"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "retry": "Coba Lagi",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "delete": "Hapus",
+    "confirm": "Konfirmasi",
+    "back": "Kembali",
+    "days": "Hari"
+  }
+}
