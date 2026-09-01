@@ -97,7 +97,7 @@ export default function FriendsPage() {
   }
 
   return (
-    <div className="px-[20px] md:px-[40px] py-6 md:py-8 max-w-[1200px] mx-auto min-h-screen">
+    <div className="px-4 md:px-[40px] py-6 md:py-8 max-w-[1200px] mx-auto min-h-screen pt-20 md:pt-8 pb-28 md:pb-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -121,7 +121,7 @@ export default function FriendsPage() {
       {/* Tabs & Search Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         {/* Tab Buttons */}
-        <div className="flex gap-2 bg-surface-container-highest p-1 rounded-2xl border border-white/5 w-fit">
+        <div className="flex gap-1 bg-surface-container-highest p-1 rounded-2xl border border-white/5 overflow-x-auto">
           <button
             onClick={() => setActiveTab('all')}
             className={`px-5 py-2 rounded-xl font-body text-label-sm transition-all ${
@@ -231,25 +231,27 @@ export default function FriendsPage() {
               ))}
             </div>
           ) : (
-            <div className="glass-panel rounded-3xl p-12 text-center max-w-lg mx-auto border border-white/10 space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
-                <span className="material-symbols-outlined text-[36px]">group</span>
+            <div className="w-full flex items-center justify-center py-8">
+              <div className="glass-panel rounded-3xl p-10 text-center w-full max-w-sm border border-white/10 space-y-5">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                  <span className="material-symbols-outlined text-[36px]">group</span>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-display text-lg text-white font-bold">
+                    Belum Ada Teman Terhubung
+                  </h3>
+                  <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                    Mulai jalin percakapan dengan menambahkan teman baru melalui username.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('add')}
+                  className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-md active:scale-95 inline-flex items-center gap-2 mx-auto"
+                >
+                  <span className="material-symbols-outlined text-[18px]">person_add</span>
+                  <span>Tambah Teman Pertama</span>
+                </button>
               </div>
-              <div className="space-y-1">
-                <h3 className="font-display text-headline-sm text-white font-bold">
-                  Belum Ada Teman Terhubung
-                </h3>
-                <p className="font-body text-xs text-on-surface-variant max-w-sm mx-auto">
-                  Mulai jalin percakapan dengan menambahkan teman baru melalui username.
-                </p>
-              </div>
-              <button
-                onClick={() => setActiveTab('add')}
-                className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold transition-all shadow-md active:scale-95 inline-flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-[18px]">person_add</span>
-                <span>Tambah Teman Pertama</span>
-              </button>
             </div>
           )}
         </>

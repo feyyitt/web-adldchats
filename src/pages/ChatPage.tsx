@@ -330,7 +330,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-72px)] md:h-screen bg-background select-none overflow-hidden">
+    <div className="flex h-[calc(100vh-128px)] md:h-screen bg-background select-none overflow-hidden mt-14 md:mt-0">
       {/* Sidebar Chat List */}
       <div
         className={`${

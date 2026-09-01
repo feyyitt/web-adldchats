@@ -41,7 +41,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="px-[20px] md:px-[40px] py-6 md:py-8 max-w-[1200px] mx-auto min-h-screen flex flex-col">
+    <div className="px-4 md:px-[40px] py-6 md:py-8 pt-20 md:pt-8 pb-28 md:pb-8 max-w-[1200px] mx-auto min-h-screen flex flex-col">
       {/* Header */}
       <div className="mb-8 flex items-center gap-4">
         <button

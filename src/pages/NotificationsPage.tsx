@@ -24,7 +24,7 @@ export default function NotificationsPage() {
   })
 
   return (
-    <div className="px-[20px] md:px-[40px] py-6 md:py-8 max-w-[1200px] mx-auto min-h-screen">
+    <div className="px-4 md:px-[40px] py-6 md:py-8 pt-20 md:pt-8 pb-28 md:pb-8 max-w-[1200px] mx-auto min-h-screen">
       <div className="mb-8">
         <h1 className="font-display text-display-lg-mobile md:text-display-lg text-on-surface tracking-tight font-bold">
           {t('nav.notifications')}
@@ -58,7 +58,7 @@ export default function NotificationsPage() {
           ))}
         </div>
       ) : (
-        <div className="glass-panel rounded-3xl p-12 text-center max-w-md mx-auto border border-white/10 space-y-3">
+        <div className="glass-panel rounded-3xl p-10 text-center w-full max-w-sm mx-auto border border-white/10 space-y-3">
           <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/40 flex items-center justify-center mx-auto">
             <span className="material-symbols-outlined text-[36px]">notifications_off</span>
           </div>

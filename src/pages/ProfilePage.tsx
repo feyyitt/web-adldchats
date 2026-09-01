@@ -136,7 +136,7 @@ export default function ProfilePage() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="px-[20px] md:px-[40px] py-6 md:py-8 max-w-[1200px] mx-auto min-h-screen select-none"
+      className="px-4 md:px-[40px] py-6 md:py-8 pt-20 md:pt-8 pb-28 md:pb-8 max-w-[1200px] mx-auto min-h-screen select-none"
     >
       {/* Profile Header Bento */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
