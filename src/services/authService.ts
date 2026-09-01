@@ -84,7 +84,7 @@ export const authService = {
       }
     }
 
-    throw new Error('Username atau Password salah. Gunakan username: faith & password: faith123')
+    throw new Error('Username atau Password salah. Silakan periksa kembali.')
   },
 
   /**

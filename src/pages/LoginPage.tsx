@@ -82,28 +82,6 @@ export default function LoginPage() {
             </motion.div>
           )}
 
-          {/* Quick Demo Credentials Banner */}
-          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-on-surface text-xs flex items-center justify-between gap-2 shadow-sm">
-            <div className="flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-emerald-400 text-[20px]">key</span>
-              <div>
-                <p className="font-bold text-emerald-400">Akun Demo Sementara:</p>
-                <p className="text-on-surface-variant font-mono mt-0.5">User: <strong className="text-white">faith</strong> | Pass: <strong className="text-white">faith123</strong></p>
-              </div>
-            </div>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              type="button"
-              onClick={() => {
-                setUsername('faith')
-                setPassword('faith123')
-              }}
-              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-[11px] transition-all shadow-md flex-shrink-0"
-            >
-              Auto Fill
-            </motion.button>
-          </div>
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username */}
