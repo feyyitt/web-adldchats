@@ -21,61 +21,6 @@ export interface FriendMarker {
   avatarUrl: string
 }
 
-const INITIAL_MALE_FRIENDS: FriendMarker[] = [
-  {
-    id: '1',
-    name: 'Kael Mercer',
-    username: '@kael_m',
-    statusText: 'Gaming 🎮',
-    active: true,
-    lat: -6.2088 - 0.003,
-    lng: 106.8456 - 0.005,
-    distance: '850 m away',
-    lastUpdated: '2 sec ago',
-    activityIcon: 'sports_esports',
-    avatarUrl: '/avatars/male_1_clean.png',
-  },
-  {
-    id: '2',
-    name: 'Marcus Vance',
-    username: '@marcust',
-    statusText: 'Drinking Coffee ☕',
-    active: true,
-    lat: -6.2088 - 0.007,
-    lng: 106.8456 + 0.008,
-    distance: '1.2 km away',
-    lastUpdated: '4 sec ago',
-    activityIcon: 'local_cafe',
-    avatarUrl: '/avatars/male_2_clean.png',
-  },
-  {
-    id: '3',
-    name: 'Alex Ravel',
-    username: '@alex_r',
-    statusText: 'Listening to Beats 🎧',
-    active: true,
-    lat: -6.2088 + 0.005,
-    lng: 106.8456 + 0.004,
-    distance: '0.4 km away',
-    lastUpdated: '12 sec ago',
-    activityIcon: 'headphones',
-    avatarUrl: '/avatars/male_3_clean.png',
-  },
-  {
-    id: '4',
-    name: 'David Kim',
-    username: '@david_k',
-    statusText: 'Workout Sync 🏋️‍♂️',
-    active: false,
-    lat: -6.2088 + 0.012,
-    lng: 106.8456 - 0.009,
-    distance: '2.5 km away',
-    lastUpdated: '15 min ago',
-    activityIcon: 'fitness_center',
-    avatarUrl: '/avatars/male_4_clean.png',
-  },
-]
-
 export default function SocialMapPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -85,8 +30,31 @@ export default function SocialMapPage() {
   const mapInstanceRef = useRef<L.Map | null>(null)
   const markersRef = useRef<Record<string, L.Marker>>({})
 
-  // Friends State & Filter
-  const [friendsList, setFriendsList] = useState<FriendMarker[]>(INITIAL_MALE_FRIENDS)
+  // Friends State & Filter - dynamically loaded from adld_friends
+  const [friendsList, setFriendsList] = useState<FriendMarker[]>(() => {
+    const saved = localStorage.getItem('adld_friends')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((f: any, idx: number) => ({
+            id: f.id || `fr_${idx}`,
+            name: f.name || 'Teman ADLD',
+            username: f.username || '@user',
+            statusText: 'Aktif di ADLD 📍',
+            active: f.status === 'Online',
+            lat: -6.2088 + (idx % 2 === 0 ? 0.004 * (idx + 1) : -0.004 * (idx + 1)),
+            lng: 106.8456 + (idx % 3 === 0 ? 0.005 * (idx + 1) : -0.005 * (idx + 1)),
+            distance: `${(idx + 1) * 0.5} km away`,
+            lastUpdated: 'Baru saja',
+            activityIcon: 'location_on',
+            avatarUrl: f.avatarUrl || `/avatars/male_${(idx % 16) + 1}_clean.png`,
+          }))
+        }
+      } catch {}
+    }
+    return []
+  })
   const [mapFilter, setMapFilter] = useState<'all' | 'online' | 'store'>('all')
 
   // Avatar Selection Modal

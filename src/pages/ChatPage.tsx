@@ -32,102 +32,60 @@ interface Conversation {
   orderStatus?: 'BARU' | 'DIPROSES' | 'SELESAI'
 }
 
-const INITIAL_CONVERSATIONS: Conversation[] = [
-  {
-    id: '1',
-    name: 'Kael Mercer',
-    lastMessage: 'Deploying the new nodes now... 🚀',
-    time: 'Now',
-    online: true,
-    streak: 12,
-    unread: 0,
-  },
-  {
-    id: '2',
-    name: 'Marcus Vance',
-    lastMessage: 'Coba lihat foto terbaru ini! 📸',
-    time: '15m',
-    online: true,
-    streak: 24,
-    unread: 1,
-  },
-  {
-    id: '3',
-    name: 'Nexus Squad 🔥',
-    lastMessage: 'Raid starts at 22:00 sync up.',
-    time: '1h',
-    online: false,
-    streak: 5,
-    unread: 0,
-    isGroup: true,
-  },
-]
-
-const INITIAL_MESSAGES: Record<string, ChatMessage[]> = {
-  '1': [
-    {
-      id: 'm1',
-      sender: 'other',
-      text: 'System is up. You ready to deploy the new nodes?',
-      time: '10:42 AM',
-    },
-    {
-      id: 'm2',
-      sender: 'self',
-      text: 'Yeah, initiating sequence now. Watch the logs.',
-      time: '10:43 AM',
-      reactions: ['🚀'],
-    },
-    {
-      id: 'm3',
-      sender: 'other',
-      text: 'Foto 1x lihat media ADLD:',
-      time: '10:44 AM',
-    },
-    {
-      id: 'm4',
-      sender: 'other',
-      text: 'Foto Rahasia ADLD',
-      time: '10:45 AM',
-      type: 'image',
-      isViewOnce: true,
-      viewed: false,
-    },
-  ],
-  '2': [
-    {
-      id: 'm5',
-      sender: 'other',
-      text: 'Hey! Meet me at downtown neon plaza 📍',
-      time: '09:15 AM',
-      type: 'location',
-    },
-  ],
-  '3': [
-    {
-      id: 'm6',
-      sender: 'other',
-      text: 'Raid starts at 22:00 sync up.',
-      time: '22:00',
-    },
-  ],
-}
-
 const REACTION_OPTIONS = ['🔥', '❤️', '😂', '👍', '😮', '🚀']
 
 export default function ChatPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const [conversations, setConversations] = useState<Conversation[]>(INITIAL_CONVERSATIONS)
-  const [selectedChat, setSelectedChat] = useState<string | null>('1')
-  const [messages, setMessages] = useState<Record<string, ChatMessage[]>>(INITIAL_MESSAGES)
+  const [conversations, setConversations] = useState<Conversation[]>(() => {
+    const saved = localStorage.getItem('adld_conversations')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {}
+    }
+    return []
+  })
+
+  const [selectedChat, setSelectedChat] = useState<string | null>(() => {
+    const saved = localStorage.getItem('adld_conversations')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed[0].id
+      } catch {}
+    }
+    return null
+  })
+
+  const [messages, setMessages] = useState<Record<string, ChatMessage[]>>(() => {
+    const saved = localStorage.getItem('adld_messages')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch {}
+    }
+    return {}
+  })
+
   const [inputMessage, setInputMessage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [activeReactionMsgId, setActiveReactionMsgId] = useState<string | null>(null)
   const [replyingToMsg, setReplyingToMsg] = useState<ChatMessage | null>(null)
   const [isAttachmentOpen, setIsAttachmentOpen] = useState(false)
   const [isViewOnceMode, setIsViewOnceMode] = useState(false)
+  const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
+  const [newChatTargetName, setNewChatTargetName] = useState('')
+
+  // Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem('adld_conversations', JSON.stringify(conversations))
+  }, [conversations])
+
+  useEffect(() => {
+    localStorage.setItem('adld_messages', JSON.stringify(messages))
+  }, [messages])
 
   // Invoice & Rich Media States
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false)
@@ -379,10 +337,10 @@ export default function ChatPage() {
           selectedChat ? 'hidden md:flex' : 'flex'
         } flex-col w-full md:w-80 lg:w-96 border-r border-white/10 bg-surface-container-lowest/50 flex-shrink-0`}
       >
-        {/* Search Input */}
-        <div className="p-4 border-b border-white/5">
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+        {/* Search & New Chat Button */}
+        <div className="p-3.5 border-b border-white/5 flex items-center gap-2">
+          <div className="relative flex-1">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
               search
             </span>
             <input
@@ -390,82 +348,110 @@ export default function ChatPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('chat.searchChats')}
-              className="w-full bg-surface-container-highest border border-white/10 text-on-surface font-body text-body-md rounded-full pl-10 pr-4 py-2.5 focus:outline-none input-glow transition-all placeholder:text-on-surface-variant/50"
+              className="w-full bg-surface-container-highest border border-white/10 text-on-surface font-body text-xs rounded-xl pl-9 pr-3 py-2.5 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-on-surface-variant/50"
             />
           </div>
+          <button
+            onClick={() => setIsNewChatModalOpen(true)}
+            className="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-md active:scale-95 flex items-center justify-center flex-shrink-0"
+            title="Mulai Obrolan Baru"
+          >
+            <span className="material-symbols-outlined text-[18px]">edit_square</span>
+          </button>
         </div>
 
         {/* Conversation List */}
         <div className="flex-1 overflow-y-auto hide-scrollbar">
-          {filteredConversations.map((convo) => (
-            <div
-              key={convo.id}
-              onClick={() => {
-                setSelectedChat(convo.id)
-                setConversations((prev) =>
-                  prev.map((c) => (c.id === convo.id ? { ...c, unread: 0 } : c))
-                )
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 border-b border-white/5 transition-all cursor-pointer group ${
-                selectedChat === convo.id
-                  ? 'bg-primary-container/10 border-l-4 border-l-primary-fixed'
-                  : 'hover:bg-surface-container-high/40'
-              }`}
-            >
-              <div className="relative flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10">
-                  <span className="material-symbols-outlined text-on-surface-variant">
-                    {convo.isGroup ? 'group' : 'person'}
-                  </span>
+          {filteredConversations.length > 0 ? (
+            filteredConversations.map((convo) => (
+              <div
+                key={convo.id}
+                onClick={() => {
+                  setSelectedChat(convo.id)
+                  setConversations((prev) =>
+                    prev.map((c) => (c.id === convo.id ? { ...c, unread: 0 } : c))
+                  )
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 border-b border-white/5 transition-all cursor-pointer group ${
+                  selectedChat === convo.id
+                    ? 'bg-emerald-500/10 border-l-4 border-l-emerald-500'
+                    : 'hover:bg-surface-container-high/40'
+                }`}
+              >
+                <div className="relative flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center border border-white/10">
+                    <span className="material-symbols-outlined text-on-surface-variant">
+                      {convo.isGroup ? 'group' : 'person'}
+                    </span>
+                  </div>
+                  {convo.online && (
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-zinc-950 shadow-sm" />
+                  )}
                 </div>
-                {convo.online && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-primary-container rounded-full border-2 border-surface-container-lowest neon-glow-primary" />
-                )}
-              </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className="font-body text-label-md text-on-surface truncate group-hover:text-primary-fixed transition-colors">
-                    {convo.name}
-                  </span>
-                  <span className="font-body text-label-sm text-on-surface-variant flex-shrink-0">
-                    {convo.time}
-                  </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center mb-0.5">
+                    <span className="font-body text-label-md text-on-surface truncate group-hover:text-emerald-400 transition-colors font-bold">
+                      {convo.name}
+                    </span>
+                    <span className="font-body text-[11px] text-on-surface-variant flex-shrink-0">
+                      {convo.time}
+                    </span>
+                  </div>
+                  <p className="font-body text-xs text-on-surface-variant truncate">
+                    {convo.lastMessage}
+                  </p>
                 </div>
-                <p className="font-body text-body-md text-on-surface-variant truncate text-xs">
-                  {convo.lastMessage}
+
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {convo.streak > 0 && (
+                    <span className="flex items-center gap-0.5 text-amber-400">
+                      <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                        local_fire_department
+                      </span>
+                      <span className="text-[11px] font-bold">{convo.streak}</span>
+                    </span>
+                  )}
+                  {convo.unread > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-emerald-500 text-zinc-950 text-[10px] font-extrabold flex items-center justify-center shadow-md">
+                      {convo.unread}
+                    </span>
+                  )}
+
+                  {/* In-Chat Quick Snap Camera Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleOpenQuickCamera(convo.id, convo.name)
+                    }}
+                    className="p-1.5 rounded-full hover:bg-emerald-500/20 text-on-surface-variant hover:text-emerald-400 transition-colors"
+                    title="Foto Kamera ADLD"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-8 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/40 flex items-center justify-center mx-auto">
+                <span className="material-symbols-outlined text-[24px]">forum</span>
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-display font-bold text-white text-xs">Belum Ada Obrolan</h4>
+                <p className="font-body text-[11px] text-on-surface-variant">
+                  Mulai percakapan baru untuk berkirim pesan & media.
                 </p>
               </div>
-
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {convo.streak > 0 && (
-                  <span className="flex items-center gap-0.5 text-secondary-container">
-                    <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      local_fire_department
-                    </span>
-                    <span className="text-[11px] font-bold">{convo.streak}</span>
-                  </span>
-                )}
-                {convo.unread > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-primary-container text-on-primary-container text-[10px] font-bold flex items-center justify-center neon-glow-primary">
-                    {convo.unread}
-                  </span>
-                )}
-
-                {/* In-Chat Quick Snap Camera Button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleOpenQuickCamera(convo.id, convo.name)
-                  }}
-                  className="p-1.5 rounded-full hover:bg-primary-container/20 text-on-surface-variant hover:text-primary-fixed transition-colors"
-                  title="Take In-Chat Snap"
-                >
-                  <span className="material-symbols-outlined text-[20px]">photo_camera</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setIsNewChatModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 inline-flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">add_comment</span>
+                <span>Mulai Obrolan</span>
+              </button>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -936,6 +922,70 @@ export default function ChatPage() {
         className="hidden"
         accept="image/*,.pdf,.doc,.docx,.zip"
       />
+
+      {/* New Chat Modal */}
+      {isNewChatModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 select-none">
+          <div className="glass-panel w-full max-w-md rounded-3xl p-6 border border-white/10 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-white/10 pb-3">
+              <h3 className="font-display font-bold text-white text-base flex items-center gap-2">
+                <span className="material-symbols-outlined text-emerald-400">edit_square</span>
+                Mulai Obrolan Baru
+              </h3>
+              <button
+                onClick={() => setIsNewChatModalOpen(false)}
+                className="w-8 h-8 rounded-full glass-panel flex items-center justify-center text-on-surface-variant hover:text-white"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (!newChatTargetName.trim()) return
+                const cleanName = newChatTargetName.trim()
+                const newId = `convo_${Date.now()}`
+                const newConvo: Conversation = {
+                  id: newId,
+                  name: cleanName,
+                  lastMessage: 'Obrolan dimulai',
+                  time: 'Now',
+                  online: true,
+                  streak: 1,
+                  unread: 0,
+                }
+                setConversations((prev) => [newConvo, ...prev])
+                setSelectedChat(newId)
+                setIsNewChatModalOpen(false)
+                setNewChatTargetName('')
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-xs font-semibold text-on-surface-variant mb-2">
+                  Nama Kontak atau Username
+                </label>
+                <input
+                  type="text"
+                  value={newChatTargetName}
+                  onChange={(e) => setNewChatTargetName(e.target.value)}
+                  placeholder="e.g. Budi Santoso atau @budi"
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all active:scale-95"
+              >
+                Mulai Obrolan
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Digital Invoice Generator Modal */}
       <OrderInvoiceModal
