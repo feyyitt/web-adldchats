@@ -180,22 +180,22 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="w-full text-center py-12 px-4 space-y-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
-                  <span className="material-symbols-outlined text-[30px]">chat_bubble_outline</span>
-                </div>
-                <div className="w-full max-w-lg mx-auto space-y-2 text-center" style={{ minWidth: '280px' }}>
-                  <h4 className="font-display font-bold text-white text-base sm:text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
-                    Belum Ada Obrolan Aktif
-                  </h4>
-                  <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed block w-full text-center max-w-md mx-auto" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
-                    Mulai percakapan baru dengan teman Anda atau berdiskusi dengan penjual katalog bisnis.
-                  </p>
-                </div>
-                <div className="pt-2 flex justify-center">
+              <div className="w-full flex items-center justify-center py-8">
+                <div className="glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-5 w-full max-w-lg mx-auto" style={{ minWidth: '280px' }}>
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
+                    <span className="material-symbols-outlined text-[36px]">chat_bubble_outline</span>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="font-display text-lg text-white font-bold block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+                      Belum Ada Obrolan Aktif
+                    </h3>
+                    <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+                      Mulai percakapan baru dengan teman Anda atau berdiskusi dengan penjual katalog bisnis.
+                    </p>
+                  </div>
                   <button
                     onClick={() => navigate('/chat')}
-                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold transition-all shadow-md active:scale-95 inline-flex items-center gap-2"
+                    className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-md active:scale-95 inline-flex items-center gap-2 mx-auto"
                   >
                     <span className="material-symbols-outlined text-[18px]">add_comment</span>
                     <span>Mulai Obrolan Baru</span>
