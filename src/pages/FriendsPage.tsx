@@ -250,10 +250,10 @@ export default function FriendsPage() {
                   <span className="material-symbols-outlined text-[36px]">group</span>
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-display text-lg text-white font-bold">
+                  <h3 className="empty-state-title font-display text-lg text-white font-bold">
                     Belum Ada Teman Terhubung
                   </h3>
-                  <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                  <p className="empty-state-desc font-body text-sm text-on-surface-variant">
                     Mulai jalin percakapan dengan menambahkan teman baru melalui username.
                   </p>
                 </div>
@@ -320,8 +320,10 @@ export default function FriendsPage() {
                   <span className="material-symbols-outlined text-[36px]">mark_email_read</span>
                 </div>
                 <div className="space-y-1.5">
-                  <h4 className="font-display font-bold text-white text-base">Tidak Ada Permintaan Pertemanan</h4>
-                  <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+                  <h4 className="empty-state-title font-display font-bold text-white text-base">
+                    Tidak Ada Permintaan Pertemanan
+                  </h4>
+                  <p className="empty-state-desc font-body text-xs sm:text-sm text-on-surface-variant">
                     Saat ada teman yang mengirimi Anda permintaan pertemanan baru, akan muncul di sini.
                   </p>
                 </div>

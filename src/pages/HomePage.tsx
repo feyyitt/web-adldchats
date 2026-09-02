@@ -180,23 +180,27 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="w-full text-center py-10 px-4 space-y-4 flex flex-col items-center justify-center">
+              <div className="w-full text-center py-10 px-4 space-y-4">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
                   <span className="material-symbols-outlined text-[30px]">chat_bubble_outline</span>
                 </div>
                 <div className="w-full max-w-md mx-auto space-y-1.5 text-center">
-                  <h4 className="font-display font-bold text-white text-base w-full">Belum Ada Obrolan Aktif</h4>
-                  <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed w-full">
+                  <h4 className="empty-state-title font-display font-bold text-white text-base sm:text-lg">
+                    Belum Ada Obrolan Aktif
+                  </h4>
+                  <p className="empty-state-desc font-body text-xs sm:text-sm text-on-surface-variant">
                     Mulai percakapan baru dengan teman Anda atau berdiskusi dengan penjual katalog bisnis.
                   </p>
                 </div>
-                <button
-                  onClick={() => navigate('/chat')}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold transition-all shadow-md active:scale-95 inline-flex items-center gap-2 mx-auto"
-                >
-                  <span className="material-symbols-outlined text-[18px]">add_comment</span>
-                  <span>Mulai Obrolan Baru</span>
-                </button>
+                <div className="pt-2 flex justify-center">
+                  <button
+                    onClick={() => navigate('/chat')}
+                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold transition-all shadow-md active:scale-95 inline-flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">add_comment</span>
+                    <span>Mulai Obrolan Baru</span>
+                  </button>
+                </div>
               </div>
             )}
           </section>

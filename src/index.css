@@ -246,6 +246,28 @@ body {
   min-width: 280px !important;
 }
 
+.empty-state-title {
+  width: 100% !important;
+  display: block !important;
+  text-align: center !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  white-space: normal !important;
+}
+
+.empty-state-desc {
+  width: 100% !important;
+  max-width: 480px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  display: block !important;
+  text-align: center !important;
+  line-height: 1.6 !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  white-space: normal !important;
+}
+
 /* ================================================
    CUSTOM TOGGLE SWITCH
    ================================================ */
