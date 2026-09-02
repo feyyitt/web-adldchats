@@ -340,16 +340,16 @@ export default function ProfilePage() {
 
       {/* Tab Contents */}
       {activeTab === 'highlights' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4">
-          <div className="w-full max-w-2xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '280px' }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4 flex justify-center">
+          <div className="w-full max-w-xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '300px' }}>
             <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
               <span className="material-symbols-outlined text-[32px]">stars</span>
             </div>
-            <div className="space-y-1.5">
-              <h4 className="font-display font-bold text-white text-base sm:text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+            <div className="w-full space-y-2 text-center">
+              <h4 className="font-display font-bold text-white text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                 Belum Ada Sorotan
               </h4>
-              <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed block w-full text-center max-w-md mx-auto" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+              <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full max-w-md mx-auto text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                 Sorotan cerita dan pencapaian profil Anda akan tampil di sini.
               </p>
             </div>
@@ -358,7 +358,7 @@ export default function ProfilePage() {
       )}
 
       {activeTab === 'recent' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4 flex justify-center">
           {recentConversations.length > 0 ? (
             <div className="space-y-3 max-w-2xl mx-auto w-full">
               {recentConversations.map((c: any) => (
@@ -378,15 +378,15 @@ export default function ProfilePage() {
               ))}
             </div>
           ) : (
-            <div className="w-full max-w-2xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '280px' }}>
+            <div className="w-full max-w-xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '300px' }}>
               <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/50 flex items-center justify-center mx-auto shadow-inner">
                 <span className="material-symbols-outlined text-[32px]">history</span>
               </div>
-              <div className="space-y-1.5">
-                <h4 className="font-display font-bold text-white text-base sm:text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+              <div className="w-full space-y-2 text-center">
+                <h4 className="font-display font-bold text-white text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                   Belum Ada Aktivitas Terbaru
                 </h4>
-                <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed block w-full text-center max-w-md mx-auto" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+                <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full max-w-md mx-auto text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                   Aktivitas obrolan dan interaksi Anda akan dicatat di sini.
                 </p>
               </div>
@@ -396,16 +396,16 @@ export default function ProfilePage() {
       )}
 
       {activeTab === 'media' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4">
-          <div className="w-full max-w-2xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '280px' }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4 flex justify-center">
+          <div className="w-full max-w-xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '300px' }}>
             <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/50 flex items-center justify-center mx-auto shadow-inner">
               <span className="material-symbols-outlined text-[32px]">photo_library</span>
             </div>
-            <div className="space-y-1.5">
-              <h4 className="font-display font-bold text-white text-base sm:text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+            <div className="w-full space-y-2 text-center">
+              <h4 className="font-display font-bold text-white text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                 Belum Ada Media
               </h4>
-              <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed block w-full text-center max-w-md mx-auto" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+              <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full max-w-md mx-auto text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                 Foto dan file yang Anda bagikan di obrolan akan muncul di sini.
               </p>
             </div>
@@ -414,7 +414,7 @@ export default function ProfilePage() {
       )}
 
       {activeTab === 'mutuals' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4 flex justify-center">
           {friendsList.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto w-full">
               {friendsList.map((f: any) => (
@@ -434,15 +434,15 @@ export default function ProfilePage() {
               ))}
             </div>
           ) : (
-            <div className="w-full max-w-2xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '280px' }}>
+            <div className="w-full max-w-xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '300px' }}>
               <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/50 flex items-center justify-center mx-auto shadow-inner">
                 <span className="material-symbols-outlined text-[32px]">group_off</span>
               </div>
-              <div className="space-y-1.5">
-                <h4 className="font-display font-bold text-white text-base sm:text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+              <div className="w-full space-y-2 text-center">
+                <h4 className="font-display font-bold text-white text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                   Belum Ada Teman Terhubung
                 </h4>
-                <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed block w-full text-center max-w-md mx-auto" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+                <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full max-w-md mx-auto text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                   Teman yang Anda tambahkan di ADLD Chats akan tampil di daftar ini.
                 </p>
               </div>
