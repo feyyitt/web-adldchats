@@ -1,0 +1,18 @@
+{
+  "short_name": "ADLD Chats",
+  "name": "ADLD Chats Web",
+  "description": "Aplikasi Percakapan Modern & Interaktif ADLD Chats",
+  "icons": [
+    {
+      "src": "/adld_stitch_logo.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#09090b",
+  "theme_color": "#10b981",
+  "display": "standalone",
+  "orientation": "portrait"
+}
