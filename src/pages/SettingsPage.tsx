@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { useThemeStore } from '@/stores/themeStore'
 import { useLogoutStore } from '@/stores/logoutStore'
+import ChangePasswordModal from '@/components/auth/ChangePasswordModal'
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation()
@@ -18,6 +19,7 @@ export default function SettingsPage() {
   // Modals state
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isChangePassOpen, setIsChangePassOpen] = useState(false)
 
   // Edit profile form
   const [editName, setEditName] = useState(() => profile?.display_name || user?.user_metadata?.display_name || 'Faith')
@@ -96,6 +98,27 @@ export default function SettingsPage() {
               </div>
               <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary-fixed transition-colors">
                 chevron_right
+              </span>
+            </div>
+
+            {/* Change Password Trigger */}
+            <div
+              onClick={() => setIsChangePassOpen(true)}
+              className="flex items-center justify-between py-2 group cursor-pointer hover:opacity-80 transition-opacity border-t border-white/5 pt-3"
+            >
+              <div>
+                <p className="font-body text-label-md text-on-surface flex items-center gap-2">
+                  <span>Ganti Kata Sandi</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
+                    Keamanan
+                  </span>
+                </p>
+                <p className="font-body text-label-sm text-on-surface-variant mt-0.5">
+                  Perbarui kata sandi akun ADLD Chats Anda kapan saja
+                </p>
+              </div>
+              <span className="material-symbols-outlined text-on-surface-variant group-hover:text-emerald-400 transition-colors">
+                lock_reset
               </span>
             </div>
 
@@ -363,6 +386,12 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePassOpen}
+        onClose={() => setIsChangePassOpen(false)}
+      />
     </div>
   )
 }

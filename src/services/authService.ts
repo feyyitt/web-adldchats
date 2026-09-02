@@ -69,6 +69,15 @@ export const authService = {
       console.warn('[ADLD Auth] Supabase login fallback to local demo auth')
     }
 
+    // Check if custom password was saved
+    const savedCustomPass = localStorage.getItem('adld-user-password')
+    if (savedCustomPass && password === savedCustomPass) {
+      const capName = cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1)
+      return {
+        user: createMockUser(`usr_${cleanUsername}_custom`, email, cleanUsername, capName),
+      }
+    }
+
     // Direct match for requested temporary account: faith / faith123
     if (cleanUsername === 'faith' && password === 'faith123') {
       return {
@@ -85,6 +94,28 @@ export const authService = {
     }
 
     throw new Error('Username atau Password salah. Silakan periksa kembali.')
+  },
+
+  /**
+   * Change / update password for current user
+   */
+  async changePassword(newPassword: string) {
+    if (newPassword.length < 6) {
+      throw new Error('Password baru minimal harus 6 karakter.')
+    }
+
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword,
+      })
+      if (!error && data?.user) {
+        localStorage.setItem('adld-user-password', newPassword)
+        return { success: true }
+      }
+    } catch {}
+
+    localStorage.setItem('adld-user-password', newPassword)
+    return { success: true }
   },
 
   /**

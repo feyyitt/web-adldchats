@@ -33,6 +33,7 @@ const ICON_PRESETS = [
 import { useAuthStore } from '@/stores/authStore'
 import { useToastStore } from '@/stores/toastStore'
 import { authService } from '@/services/authService'
+import ChangePasswordModal from '@/components/auth/ChangePasswordModal'
 
 export default function ProfilePage() {
   const { t } = useTranslation()
@@ -45,6 +46,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
   const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false)
+  const [isChangePassOpen, setIsChangePassOpen] = useState(false)
 
   // Profile data state
   const defaultDisplayName = profile?.display_name || user?.user_metadata?.display_name || localStorage.getItem('adld-user-name') || 'Faith'
@@ -277,6 +279,16 @@ export default function ProfilePage() {
               >
                 <span className="material-symbols-outlined text-[16px]">edit</span>
                 {t('profile.editProfile')}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setIsChangePassOpen(true)}
+                className="glass-panel text-on-surface font-body text-xs sm:text-label-md px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-1.5 hover:bg-white/10 font-semibold"
+                title="Ganti Password"
+              >
+                <span className="material-symbols-outlined text-[16px] text-emerald-400">lock_reset</span>
+                Ganti Password
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -838,6 +850,12 @@ export default function ProfilePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Change Password Dialog Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePassOpen}
+        onClose={() => setIsChangePassOpen(false)}
+      />
     </motion.div>
   )
 }
