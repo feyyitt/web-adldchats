@@ -820,7 +820,7 @@ export default function ChatPage() {
       {/* In-Chat Camera Snap Modal */}
       {isInChatCameraOpen && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4 select-none">
-          <div className="glass-panel w-full max-w-md rounded-3xl p-6 border border-white/15 shadow-2xl flex flex-col space-y-4">
+          <div className="glass-panel modal-card w-full max-w-md rounded-3xl p-6 border border-white/15 shadow-2xl flex flex-col space-y-4">
             {/* Header */}
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
@@ -863,57 +863,69 @@ export default function ChatPage() {
                   autoPlay
                   playsInline
                   muted
-                  className="w-full h-full object-cover rounded-xl scale-x-[-1]"
+                  className="w-full h-full object-cover rounded-xl"
                 />
               ) : (
-                <div className="space-y-2">
-                  <span className="material-symbols-outlined text-[60px] text-emerald-400/60">
-                    photo_camera
-                  </span>
-                  <p className="font-body text-xs font-semibold text-on-surface-variant">
-                    Kamera Siap Mengambil Foto Snap 📸
+                <div className="space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto animate-pulse">
+                    <span className="material-symbols-outlined text-[32px]">photo_camera</span>
+                  </div>
+                  <h4 className="font-display text-white font-bold text-sm">Mode Kamera ADLD</h4>
+                  <p className="font-body text-xs text-on-surface-variant max-w-[220px]">
+                    Siap mengambil foto instan untuk dikirim sebagai pesan 1x lihat atau media chat.
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Caption Input (when captured) */}
-            {capturedSnapUrl && (
+            {/* Caption Input */}
+            <div className="w-full">
               <input
                 type="text"
                 value={snapCaption}
                 onChange={(e) => setSnapCaption(e.target.value)}
-                placeholder="Tambah pesan keterangan (caption)..."
-                className="w-full bg-zinc-900 border border-white/10 text-white text-xs rounded-xl px-4 py-2.5 text-center focus:outline-none focus:border-emerald-500"
+                placeholder="Tambahkan teks caption..."
+                className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500"
               />
-            )}
+            </div>
 
-            {/* Action Buttons */}
-            <div className="pt-2">
-              {!capturedSnapUrl ? (
-                <button
-                  onClick={handleCaptureInChatSnap}
-                  className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold flex items-center justify-center gap-2 shadow-lg btn-shimmer active:scale-95 transition-all"
-                >
-                  <span className="material-symbols-outlined text-[18px]">photo_camera</span>
-                  <span>Ambil Foto Snap</span>
-                </button>
-              ) : (
-                <div className="flex gap-3">
+            {/* Footer Action Buttons */}
+            <div className="flex items-center gap-3 pt-2">
+              {capturedSnapUrl ? (
+                <>
                   <button
-                    onClick={() => setCapturedSnapUrl(null)}
-                    className="flex-1 py-3 rounded-2xl glass-panel text-on-surface-variant hover:text-white font-body text-xs font-semibold"
+                    onClick={() => {
+                      setCapturedSnapUrl(null)
+                      setSnapCaption('')
+                    }}
+                    className="flex-1 py-2.5 rounded-xl glass-panel text-on-surface-variant hover:text-white font-semibold text-xs"
                   >
-                    Ambil Ulang
+                    Foto Ulang
                   </button>
                   <button
                     onClick={handleSendInChatSnap}
-                    className="flex-1 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold flex items-center justify-center gap-2 shadow-lg btn-shimmer active:scale-95 transition-all"
+                    className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5"
                   >
-                    <span className="material-symbols-outlined text-[18px]">send</span>
+                    <span className="material-symbols-outlined text-[16px]">send</span>
                     <span>Kirim Snap</span>
                   </button>
-                </div>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsInChatCameraOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl glass-panel text-on-surface-variant hover:text-white font-semibold text-xs"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleCaptureInChatSnap}
+                    className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">camera</span>
+                    <span>Ambil Foto</span>
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -923,7 +935,7 @@ export default function ChatPage() {
       {/* View Once Fullscreen Preview Modal */}
       {activeViewOnceMsg && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4 select-none">
-          <div className="glass-panel w-full max-w-md rounded-3xl p-6 border border-amber-500/30 shadow-2xl flex flex-col items-center space-y-4 text-center">
+          <div className="glass-panel modal-card w-full max-w-md rounded-3xl p-6 border border-amber-500/30 shadow-2xl flex flex-col items-center space-y-4 text-center">
             <div className="flex justify-between items-center w-full border-b border-white/10 pb-3">
               <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
                 <span className="material-symbols-outlined text-[18px]">visibility</span>
@@ -974,7 +986,7 @@ export default function ChatPage() {
       {/* New Chat Modal */}
       {isNewChatModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 select-none">
-          <div className="glass-panel w-full max-w-md rounded-3xl p-6 border border-white/10 shadow-2xl space-y-4">
+          <div className="glass-panel modal-card w-full max-w-md rounded-3xl p-6 sm:p-8 border border-white/10 shadow-2xl space-y-5">
             <div className="flex justify-between items-center border-b border-white/10 pb-3">
               <h3 className="font-display font-bold text-white text-base flex items-center gap-2">
                 <span className="material-symbols-outlined text-emerald-400">edit_square</span>
