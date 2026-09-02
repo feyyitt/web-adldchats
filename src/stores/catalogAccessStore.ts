@@ -21,8 +21,8 @@ interface CatalogAccessState {
 export const useCatalogAccessStore = create<CatalogAccessState>()(
   persist(
     (set, get) => ({
-      // Main admin Faith and admin are pre-approved by default
-      approvedUserIds: ['faith', 'admin', '00000000-0000-0000-0000-000000000001'],
+      // Only Faith is the primary admin by default
+      approvedUserIds: ['faith'],
       pendingRequests: [],
 
       requestAccess: (user) => {
@@ -66,8 +66,8 @@ export const useCatalogAccessStore = create<CatalogAccessState>()(
       isApproved: (userIdOrUsername) => {
         if (!userIdOrUsername) return false
         const key = userIdOrUsername.toLowerCase()
-        // Faith / Admin is always approved
-        if (key === 'faith' || key === 'admin') return true
+        // Faith is always approved as the primary admin
+        if (key === 'faith') return true
         return get().approvedUserIds.some((id) => id.toLowerCase() === key)
       },
 
@@ -81,6 +81,14 @@ export const useCatalogAccessStore = create<CatalogAccessState>()(
     }),
     {
       name: 'adld-catalog-permissions',
+      onRehydrateStorage: () => (state) => {
+        if (state?.approvedUserIds) {
+          state.approvedUserIds = state.approvedUserIds.filter(
+            (id) => id !== 'admin' && !id.startsWith('00000000')
+          )
+        }
+      },
     }
   )
 )
+

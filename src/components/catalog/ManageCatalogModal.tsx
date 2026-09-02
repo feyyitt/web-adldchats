@@ -357,35 +357,44 @@ export default function ManageCatalogModal({ isOpen, onClose }: ManageCatalogMod
 
             {/* Approved Users Section */}
             <div className="space-y-2 pt-2 border-t border-white/10">
-              <h4 className="font-body text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px]">verified_user</span>
-                Pengguna Yang Memiliki Izin Akses ({approvedUserIds.length})
-              </h4>
+              {(() => {
+                const cleanApproved = approvedUserIds.filter(
+                  (id) => id !== 'admin' && !id.startsWith('00000000')
+                )
+                return (
+                  <>
+                    <h4 className="font-body text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px]">verified_user</span>
+                      Pengguna Yang Memiliki Izin Akses ({cleanApproved.length})
+                    </h4>
 
-              <div className="space-y-2">
-                {approvedUserIds.map((id) => (
-                  <div
-                    key={id}
-                    className="p-3 rounded-2xl glass-panel border border-white/10 flex items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
-                      <span className="font-body text-xs font-bold text-white">
-                        {id === 'faith' ? 'Faith (Admin Utama 👑)' : id}
-                      </span>
+                    <div className="space-y-2">
+                      {cleanApproved.map((id) => (
+                        <div
+                          key={id}
+                          className="p-3 rounded-2xl glass-panel border border-white/10 flex items-center justify-between gap-3"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
+                            <span className="font-body text-xs font-bold text-white">
+                              {id.toLowerCase() === 'faith' ? 'Faith (Admin Utama 👑)' : id}
+                            </span>
+                          </div>
+
+                          {id.toLowerCase() !== 'faith' && (
+                            <button
+                              onClick={() => handleRevoke(id, id)}
+                              className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white font-semibold text-[11px] transition-colors"
+                            >
+                              Cabut Izin
+                            </button>
+                          )}
+                        </div>
+                      ))}
                     </div>
-
-                    {id !== 'faith' && id !== 'admin' && (
-                      <button
-                        onClick={() => handleRevoke(id, id)}
-                        className="px-2.5 py-1 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white font-semibold text-[11px] transition-colors"
-                      >
-                        Cabut Izin
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  </>
+                )
+              })()}
             </div>
           </div>
         )}
