@@ -14,23 +14,50 @@ export default function MobileBottomNav() {
     { to: '/', icon: 'home', label: 'Beranda' },
     { to: '/chat', icon: 'chat', label: t('nav.chat') },
     { to: '/catalog', icon: 'storefront', label: 'Katalog' },
-    { to: '/map', icon: 'map', label: 'ADLD Maps' },
+    { to: '/map', icon: 'map', label: 'Maps' },
     { to: '/profile', icon: 'person', label: t('nav.profile') },
   ]
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/95 backdrop-blur-2xl border-t border-white/10 safe-area-bottom select-none shadow-2xl">
-      <div className="flex items-center justify-around h-16 px-2 w-full max-w-lg mx-auto">
+    <nav
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        width: '100%',
+        zIndex: 50,
+      }}
+      className="md:hidden bg-zinc-950/95 backdrop-blur-2xl border-t border-white/10 safe-area-bottom select-none shadow-2xl"
+    >
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          height: '60px',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === '/'}
+            style={{
+              flex: '1 1 0%',
+              width: '20%',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all flex-1 text-center ${
+              `py-1 transition-all text-center ${
                 isActive
                   ? 'text-emerald-400 bg-emerald-500/15 font-bold'
-                  : 'text-on-surface-variant hover:text-on-surface'
+                  : 'text-zinc-400 hover:text-white'
               }`
             }
           >
@@ -44,7 +71,7 @@ export default function MobileBottomNav() {
                 >
                   {item.icon}
                 </span>
-                <span className="text-[10px] font-semibold tracking-tight truncate block text-center leading-tight mt-0.5">
+                <span className="text-[10px] font-semibold tracking-tight truncate block text-center leading-tight mt-0.5 w-full">
                   {item.label}
                 </span>
               </>
@@ -55,3 +82,4 @@ export default function MobileBottomNav() {
     </nav>
   )
 }
+
