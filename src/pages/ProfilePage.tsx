@@ -45,7 +45,8 @@ export default function ProfilePage() {
 
   // Profile data state
   const defaultDisplayName = profile?.display_name || user?.user_metadata?.display_name || 'Faith'
-  const defaultBio = profile?.bio || 'Digital explorer | Neon nights | Always online. Living for the late night drops and deep conversations. 🌌'
+  const rawBio = profile?.bio || 'Halo! Selamat datang di profil ADLD Chats saya. Siap terhubung dan berdiskusi! 🚀'
+  const defaultBio = rawBio.includes('Digital explorer |') ? 'Halo! Selamat datang di profil ADLD Chats saya. Siap terhubung dan berdiskusi! 🚀' : rawBio
   const username = profile?.username || user?.user_metadata?.username || 'faith'
 
   const [name, setName] = useState(defaultDisplayName)
@@ -53,6 +54,32 @@ export default function ProfilePage() {
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>(() => {
     return localStorage.getItem('adld-user-avatar') || '/avatars/male_1_clean.png'
   })
+
+  // Dynamic Friends & Streak data
+  const friendsList = (() => {
+    try {
+      const saved = localStorage.getItem('adld_friends')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) return parsed
+      }
+    } catch {}
+    return []
+  })()
+
+  const friendsCount = friendsList.length
+  const maxStreak = friendsList.length > 0 ? Math.max(...friendsList.map((f: any) => f.streak || 0), 0) : 0
+
+  const recentConversations = (() => {
+    try {
+      const saved = localStorage.getItem('adld_conversations')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) return parsed
+      }
+    } catch {}
+    return []
+  })()
 
   // Dynamic Badges state
   const [badges, setBadges] = useState<ProfileBadge[]>(() => {
@@ -269,7 +296,9 @@ export default function ProfilePage() {
             >
               local_fire_department
             </span>
-            <div className="font-display text-headline-md text-on-surface font-bold">24 Days</div>
+            <div className="font-display text-headline-md text-on-surface font-bold">
+              {maxStreak > 0 ? `${maxStreak} Hari` : '0 Hari'}
+            </div>
             <div className="font-body text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
               {t('profile.activeStreak')}
             </div>
@@ -282,7 +311,9 @@ export default function ProfilePage() {
             >
               group
             </span>
-            <div className="font-display text-headline-md text-on-surface font-bold">1,042</div>
+            <div className="font-display text-headline-md text-on-surface font-bold">
+              {friendsCount}
+            </div>
             <div className="font-body text-label-sm text-on-surface-variant uppercase tracking-wider font-semibold">
               {t('profile.connections')}
             </div>
@@ -310,82 +341,103 @@ export default function ProfilePage() {
       {/* Tab Contents */}
       {activeTab === 'highlights' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h2 className="font-display text-headline-md text-on-surface mb-4 font-bold">
-            Highlights
-          </h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <motion.div whileHover={{ y: -4 }} className="aspect-[4/5] rounded-2xl overflow-hidden glass-panel border border-white/10 relative group cursor-pointer">
-              <div className="w-full h-full bg-zinc-800/50 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30">image</span>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                <span className="font-body text-label-sm text-emerald-400 font-bold">Night City</span>
-                <span className="font-body text-label-sm text-white/70">Oct 24</span>
-              </div>
-            </motion.div>
-
-            <motion.div whileHover={{ y: -4 }} className="aspect-[4/5] rounded-2xl overflow-hidden glass-panel border border-white/10 relative group cursor-pointer">
-              <div className="w-full h-full bg-zinc-800/50 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30">image</span>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                <span className="font-body text-label-sm text-emerald-400 font-bold">Set 01</span>
-                <span className="font-body text-label-sm text-white/70">Oct 12</span>
-              </div>
-            </motion.div>
+          <div className="text-center py-10 glass-panel rounded-3xl p-6 border border-white/10 space-y-3 max-w-xl">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center mx-auto text-emerald-400">
+              <span className="material-symbols-outlined text-[28px]">stars</span>
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-display font-bold text-white text-base">Belum Ada Sorotan</h4>
+              <p className="font-body text-xs text-on-surface-variant leading-relaxed">
+                Sorotan cerita dan pencapaian profil Anda akan tampil di sini.
+              </p>
+            </div>
           </div>
         </motion.div>
       )}
 
       {activeTab === 'recent' && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 max-w-2xl">
-          <div className="glass-panel rounded-2xl p-4 flex items-center gap-4">
-            <div className="p-3 rounded-full bg-emerald-500/10 text-emerald-400">
-              <span className="material-symbols-outlined">chat</span>
+          {recentConversations.length > 0 ? (
+            recentConversations.map((c: any) => (
+              <div key={c.id} className="glass-panel rounded-2xl p-4 flex items-center gap-4">
+                <div className="p-3 rounded-full bg-emerald-500/10 text-emerald-400 flex-shrink-0">
+                  <span className="material-symbols-outlined">chat</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-body text-label-md text-on-surface font-semibold truncate">
+                    Obrolan dengan {c.name}
+                  </p>
+                  <p className="font-body text-label-sm text-on-surface-variant truncate">
+                    {c.lastMessage || 'Obrolan dimulai'} · {c.time || 'Baru saja'}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-10 glass-panel rounded-3xl p-6 border border-white/10 space-y-3 max-w-xl">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center mx-auto text-on-surface-variant/50">
+                <span className="material-symbols-outlined text-[28px]">history</span>
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-display font-bold text-white text-base">Belum Ada Aktivitas Terbaru</h4>
+                <p className="font-body text-xs text-on-surface-variant leading-relaxed">
+                  Aktivitas obrolan dan interaksi Anda akan dicatat di sini.
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-body text-label-md text-on-surface font-semibold">Sent a message to Kael Mercer</p>
-              <p className="font-body text-label-sm text-on-surface-variant">10 minutes ago</p>
-            </div>
-          </div>
-          <div className="glass-panel rounded-2xl p-4 flex items-center gap-4">
-            <div className="p-3 rounded-full bg-orange-500/10 text-orange-400">
-              <span className="material-symbols-outlined">local_fire_department</span>
-            </div>
-            <div>
-              <p className="font-body text-label-md text-on-surface font-semibold">Extended 24-day streak with Marcus Vance</p>
-              <p className="font-body text-label-sm text-on-surface-variant">2 hours ago</p>
-            </div>
-          </div>
+          )}
         </motion.div>
       )}
 
       {activeTab === 'media' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-3 gap-3 max-w-2xl">
-          <div className="aspect-square rounded-xl bg-zinc-800/60 border border-white/10 flex items-center justify-center text-on-surface-variant/40">
-            <span className="material-symbols-outlined">image</span>
-          </div>
-          <div className="aspect-square rounded-xl bg-zinc-800/60 border border-white/10 flex items-center justify-center text-on-surface-variant/40">
-            <span className="material-symbols-outlined">videocam</span>
-          </div>
-          <div className="aspect-square rounded-xl bg-zinc-800/60 border border-white/10 flex items-center justify-center text-on-surface-variant/40">
-            <span className="material-symbols-outlined">image</span>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <div className="text-center py-10 glass-panel rounded-3xl p-6 border border-white/10 space-y-3 max-w-xl">
+            <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center mx-auto text-on-surface-variant/50">
+              <span className="material-symbols-outlined text-[28px]">photo_library</span>
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-display font-bold text-white text-base">Belum Ada Media</h4>
+              <p className="font-body text-xs text-on-surface-variant leading-relaxed">
+                Foto dan file yang Anda bagikan di obrolan akan muncul di sini.
+              </p>
+            </div>
           </div>
         </motion.div>
       )}
 
       {activeTab === 'mutuals' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
-          <div className="glass-panel rounded-2xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10">
-              <span className="material-symbols-outlined text-[20px] text-on-surface-variant">person</span>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {friendsList.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+              {friendsList.map((f: any) => (
+                <div key={f.id} className="glass-panel rounded-2xl p-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10 overflow-hidden flex-shrink-0">
+                    {f.avatarUrl ? (
+                      <img src={f.avatarUrl} alt={f.name} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="material-symbols-outlined text-[20px] text-on-surface-variant">person</span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-body text-label-md text-on-surface font-bold truncate">{f.name}</p>
+                    <p className="font-body text-xs text-emerald-400 truncate">{f.username || '@teman'}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <p className="font-body text-label-md text-on-surface font-semibold">Marcus Vance</p>
-              <p className="font-body text-label-sm text-on-surface-variant">12 Mutual Friends</p>
+          ) : (
+            <div className="text-center py-10 glass-panel rounded-3xl p-6 border border-white/10 space-y-3 max-w-xl">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center mx-auto text-on-surface-variant/50">
+                <span className="material-symbols-outlined text-[28px]">group_off</span>
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-display font-bold text-white text-base">Belum Ada Teman Terhubung</h4>
+                <p className="font-body text-xs text-on-surface-variant leading-relaxed">
+                  Teman yang Anda tambahkan di ADLD Chats akan tampil di daftar ini.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </motion.div>
       )}
 
