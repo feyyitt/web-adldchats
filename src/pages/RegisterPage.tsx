@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { motion, AnimatePresence } from 'framer-motion'
 import { authService } from '@/services/authService'
 import { useAuthStore } from '@/stores/authStore'
 import AdldLogo from '@/components/common/AdldLogo'
@@ -24,7 +25,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (password !== confirmPassword) {
-      setErrorMsg('Passwords do not match')
+      setErrorMsg('Kata sandi konfirmasi tidak cocok')
       return
     }
 
@@ -48,7 +49,7 @@ export default function RegisterPage() {
         }, 1300)
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Registration failed'
+      const message = err instanceof Error ? err.message : 'Registrasi gagal'
       setErrorMsg(message)
       setIsLoading(false)
     }
@@ -56,45 +57,51 @@ export default function RegisterPage() {
 
   return (
     <>
-      <div className="w-full max-w-md">
-        <div className="glass-panel modal-card rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl">
+      <div className="w-full">
+        <div className="w-full glass-panel rounded-3xl p-7 md:p-8 border border-white/15 shadow-2xl space-y-6">
           {/* Official ADLD Logo */}
-          <div className="flex justify-center mb-6">
-            <AdldLogo size="xl" showText={false} />
+          <div className="flex justify-center mb-2">
+            <AdldLogo size="lg" showText={false} />
           </div>
 
           {/* Title */}
-          <h1 className="font-display text-headline-md text-on-surface text-center mb-1">
-            {t('auth.register')}
-          </h1>
-          <p className="font-body text-body-md text-on-surface-variant text-center mb-8">
-            {t('auth.signInContinue')}
-          </p>
+          <div className="text-center">
+            <h1 className="font-display text-headline-md text-on-surface font-bold">
+              {t('auth.register')}
+            </h1>
+            <p className="font-body text-body-md text-on-surface-variant mt-1">
+              Buat akun baru dan bergabung ke ADLD Chats
+            </p>
+          </div>
 
           {/* Error Alert */}
           {errorMsg && (
-            <div className="mb-6 p-3 rounded-xl bg-error-container/20 border border-error/30 text-error text-body-md text-center">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-body-md text-center font-medium"
+            >
               {errorMsg}
-            </div>
+            </motion.div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Display Name */}
             <div>
-              <label className="block font-body text-label-md text-on-surface mb-2">
-                {t('auth.displayName')}
+              <label className="block font-body text-label-md text-on-surface mb-2 font-semibold">
+                Nama Lengkap / Panggilan
               </label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
                   badge
                 </span>
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder={t('auth.displayNamePlaceholder')}
-                  className="w-full bg-surface-container-highest border border-white/10 text-on-surface font-body text-body-md rounded-xl pl-10 pr-4 py-3 focus:outline-none input-glow transition-all placeholder:text-on-surface-variant/50"
+                  placeholder="Contoh: Alex Mercer"
+                  className="w-full bg-zinc-900/80 border border-white/10 text-on-surface font-body text-body-md rounded-2xl pl-11 pr-4 py-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-on-surface-variant/40"
                   required
                 />
               </div>
@@ -102,19 +109,19 @@ export default function RegisterPage() {
 
             {/* Username */}
             <div>
-              <label className="block font-body text-label-md text-on-surface mb-2">
-                {t('auth.username')}
+              <label className="block font-body text-label-md text-on-surface mb-2 font-semibold">
+                Nama Pengguna (Username)
               </label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
                   alternate_email
                 </span>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder={t('auth.usernamePlaceholder')}
-                  className="w-full bg-surface-container-highest border border-white/10 text-on-surface font-body text-body-md rounded-xl pl-10 pr-4 py-3 focus:outline-none input-glow transition-all placeholder:text-on-surface-variant/50"
+                  placeholder="Contoh: alex_mercer"
+                  className="w-full bg-zinc-900/80 border border-white/10 text-on-surface font-body text-body-md rounded-2xl pl-11 pr-4 py-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-on-surface-variant/40"
                   required
                 />
               </div>
@@ -122,19 +129,19 @@ export default function RegisterPage() {
 
             {/* Password */}
             <div>
-              <label className="block font-body text-label-md text-on-surface mb-2">
-                {t('auth.password')}
+              <label className="block font-body text-label-md text-on-surface mb-2 font-semibold">
+                Kata Sandi
               </label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
                   lock
                 </span>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('auth.passwordPlaceholder')}
-                  className="w-full bg-surface-container-highest border border-white/10 text-on-surface font-body text-body-md rounded-xl pl-10 pr-4 py-3 focus:outline-none input-glow transition-all placeholder:text-on-surface-variant/50"
+                  placeholder="Minimal 6 karakter"
+                  className="w-full bg-zinc-900/80 border border-white/10 text-on-surface font-body text-body-md rounded-2xl pl-11 pr-4 py-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-on-surface-variant/40"
                   required
                 />
               </div>
@@ -142,40 +149,41 @@ export default function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block font-body text-label-md text-on-surface mb-2">
-                {t('auth.confirmPassword')}
+              <label className="block font-body text-label-md text-on-surface mb-2 font-semibold">
+                Konfirmasi Kata Sandi
               </label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
-                  lock
+                <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+                  lock_reset
                 </span>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder={t('auth.confirmPasswordPlaceholder')}
-                  className="w-full bg-surface-container-highest border border-white/10 text-on-surface font-body text-body-md rounded-xl pl-10 pr-4 py-3 focus:outline-none input-glow transition-all placeholder:text-on-surface-variant/50"
+                  placeholder="Ulangi kata sandi"
+                  className="w-full bg-zinc-900/80 border border-white/10 text-on-surface font-body text-body-md rounded-2xl pl-11 pr-4 py-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-on-surface-variant/40"
                   required
                 />
               </div>
             </div>
 
             {/* Submit */}
-            <button
+            <motion.button
+              whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary-container text-on-primary-container font-display text-label-md py-3 rounded-lg neon-glow-primary hover:brightness-110 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider"
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-display text-label-md py-3.5 rounded-2xl transition-all shadow-lg font-bold tracking-wider uppercase active:scale-98 disabled:opacity-50 mt-2"
             >
-              {isLoading ? t('common.loading') : t('auth.register')}
-            </button>
+              {isLoading ? t('common.loading') : 'DAFTAR SEKARANG'}
+            </motion.button>
           </form>
 
           {/* Sign In Link */}
-          <p className="text-center font-body text-body-md text-on-surface-variant mt-6">
+          <p className="text-center font-body text-body-md text-on-surface-variant pt-2 border-t border-white/10">
             {t('auth.haveAccount')}{' '}
             <Link
               to="/login"
-              className="text-secondary-container hover:text-secondary transition-colors font-semibold"
+              className="text-emerald-400 hover:underline transition-colors font-bold"
             >
               {t('auth.signIn')}
             </Link>
@@ -184,32 +192,38 @@ export default function RegisterPage() {
       </div>
 
       {/* Full-Screen Welcome Register Transition Overlay */}
-      {isRegisterAnim && (
-        <div className="fixed inset-0 z-50 bg-[#0d0d0d]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none animate-fade-up-in">
-          {/* Animated Google Stitch Logo */}
-          <div className="relative mb-8 animate-bounce duration-1000">
-            <AdldLogo size="xl" showText={false} />
-            <div className="absolute inset-0 rounded-full bg-primary-container/25 blur-3xl animate-ping" />
-          </div>
+      <AnimatePresence>
+        {isRegisterAnim && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#09090b]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none"
+          >
+            {/* Animated ADLD Logo */}
+            <div className="relative mb-8 animate-bounce duration-1000">
+              <AdldLogo size="xl" showText={false} />
+            </div>
 
-          {/* Welcome Title */}
-          <h2 className="font-display text-headline-lg text-on-surface mb-2">
-            Selamat Datang, <span className="text-primary-fixed font-bold">{registeredName}</span>! 🚀
-          </h2>
-          <p className="font-body text-body-lg text-on-surface-variant mb-8">
-            Akun ADLD Chats Anda telah berhasil dibuat!
-          </p>
+            {/* Welcome Title */}
+            <h2 className="font-display text-headline-lg text-on-surface mb-2 font-bold">
+              Selamat Datang, <span className="text-emerald-400 font-extrabold">{registeredName}</span>! 🚀
+            </h2>
+            <p className="font-body text-body-lg text-on-surface-variant mb-8">
+              Akun ADLD Chats Anda telah berhasil dibuat!
+            </p>
 
-          {/* Progress Bar & Status */}
-          <div className="w-64 h-1.5 bg-surface-container-high rounded-full overflow-hidden relative shadow-inner mb-3">
-            <div className="h-full bg-gradient-to-r from-primary-fixed via-secondary-container to-tertiary-fixed animate-pulse w-full" />
-          </div>
+            {/* Progress Bar & Status */}
+            <div className="w-64 h-1.5 bg-zinc-800 rounded-full overflow-hidden relative shadow-inner mb-3">
+              <div className="h-full bg-emerald-500 animate-pulse w-full" />
+            </div>
 
-          <span className="font-body text-label-sm text-primary-fixed-dim uppercase tracking-widest font-semibold">
-            Initializing Profile & Map...
-          </span>
-        </div>
-      )}
+            <span className="font-body text-label-sm text-emerald-400 uppercase tracking-widest font-semibold">
+              Initializing Profile & Map...
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

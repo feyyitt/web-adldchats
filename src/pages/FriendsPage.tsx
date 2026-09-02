@@ -72,6 +72,12 @@ export default function FriendsPage() {
     setPendingRequests((prev) => prev.filter((p) => p.id !== id))
   }
 
+  const handleRemoveFriend = (id: string, name: string) => {
+    if (window.confirm(`Hapus ${name} dari daftar teman?`)) {
+      setFriends((prev) => prev.filter((f) => f.id !== id))
+    }
+  }
+
   const handleAddFriendSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!addUsername.trim()) return
@@ -93,11 +99,11 @@ export default function FriendsPage() {
       setAddSuccess(false)
       setAddUsername('')
       setActiveTab('all')
-    }, 1200)
+    }, 1000)
   }
 
   return (
-    <div className="px-4 md:px-[40px] py-6 md:py-8 max-w-[1200px] mx-auto min-h-screen pt-20 md:pt-8 pb-28 md:pb-8">
+    <div className="px-4 md:px-8 py-6 max-w-[1200px] mx-auto min-h-screen">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -218,13 +224,20 @@ export default function FriendsPage() {
                     )}
                   </div>
 
-                  <div className="flex gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
-                      onClick={() => navigate('/chat')}
-                      className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all active:scale-95 shadow-md"
+                      onClick={() => navigate('/chat/' + friend.id, { state: { friend } })}
+                      className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all active:scale-95 shadow-md flex items-center justify-center"
                       title="Kirim Pesan"
                     >
-                      <span className="material-symbols-outlined text-[20px]">chat</span>
+                      <span className="material-symbols-outlined text-[18px]">chat</span>
+                    </button>
+                    <button
+                      onClick={() => handleRemoveFriend(friend.id, friend.name)}
+                      className="p-2.5 rounded-xl bg-zinc-800/80 hover:bg-red-500/20 text-on-surface-variant hover:text-red-400 border border-white/5 transition-all active:scale-95 flex items-center justify-center"
+                      title="Hapus Teman"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">person_remove</span>
                     </button>
                   </div>
                 </div>

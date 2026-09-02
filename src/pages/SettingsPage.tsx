@@ -8,7 +8,7 @@ import { useLogoutStore } from '@/stores/logoutStore'
 export default function SettingsPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const { logout } = useAuthStore()
+  const { user, profile, setProfile, logout } = useAuthStore()
   const { theme, setTheme } = useThemeStore()
   const openLogoutConfirm = useLogoutStore((state) => state.openConfirm)
 
@@ -20,9 +20,9 @@ export default function SettingsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   // Edit profile form
-  const [editName, setEditName] = useState('Alex Mercer')
-  const [editUsername, setEditUsername] = useState('alex_mercer')
-  const [editBio, setEditBio] = useState('Digital explorer | Neon nights | Always online. 🌌')
+  const [editName, setEditName] = useState(() => profile?.display_name || user?.user_metadata?.display_name || 'Faith')
+  const [editUsername, setEditUsername] = useState(() => profile?.username || user?.user_metadata?.username || 'faith')
+  const [editBio, setEditBio] = useState(() => profile?.bio || 'Digital explorer | Neon nights | Always online. 🌌')
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const lang = e.target.value
@@ -32,6 +32,14 @@ export default function SettingsPage() {
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault()
+    if (profile) {
+      setProfile({
+        ...profile,
+        display_name: editName,
+        username: editUsername,
+        bio: editBio,
+      })
+    }
     setIsEditProfileOpen(false)
   }
 
@@ -41,7 +49,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="px-4 md:px-[40px] py-6 md:py-8 pt-20 md:pt-8 pb-28 md:pb-8 max-w-[1200px] mx-auto min-h-screen flex flex-col">
+    <div className="px-4 md:px-8 py-6 max-w-[1200px] mx-auto min-h-screen flex flex-col">
       {/* Header */}
       <div className="mb-8 flex items-center gap-4">
         <button

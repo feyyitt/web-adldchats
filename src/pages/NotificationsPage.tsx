@@ -24,7 +24,7 @@ export default function NotificationsPage() {
   })
 
   return (
-    <div className="px-4 md:px-[40px] py-6 md:py-8 pt-20 md:pt-8 pb-28 md:pb-8 max-w-[1200px] mx-auto min-h-screen">
+    <div className="px-4 md:px-8 py-6 max-w-[1200px] mx-auto min-h-screen">
       <div className="mb-8">
         <h1 className="font-display text-display-lg-mobile md:text-display-lg text-on-surface tracking-tight font-bold">
           {t('nav.notifications')}

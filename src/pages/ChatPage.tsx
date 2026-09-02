@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import OrderInvoiceModal from '@/components/catalog/OrderInvoiceModal'
 import type { InvoiceData } from '@/components/catalog/OrderInvoiceModal'
 import { soundService } from '@/services/soundService'
@@ -37,6 +37,8 @@ const REACTION_OPTIONS = ['🔥', '❤️', '😂', '👍', '😮', '🚀']
 export default function ChatPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { id: routeChatId } = useParams<{ id?: string }>()
 
   const [conversations, setConversations] = useState<Conversation[]>(() => {
     const saved = localStorage.getItem('adld_conversations')
@@ -49,6 +51,7 @@ export default function ChatPage() {
   })
 
   const [selectedChat, setSelectedChat] = useState<string | null>(() => {
+    if (routeChatId) return routeChatId
     const saved = localStorage.getItem('adld_conversations')
     if (saved) {
       try {
@@ -78,6 +81,38 @@ export default function ChatPage() {
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
   const [newChatTargetName, setNewChatTargetName] = useState('')
 
+  // Handle route param or state friend target navigation
+  useEffect(() => {
+    if (routeChatId) {
+      setSelectedChat(routeChatId)
+    }
+
+    if (location.state?.friend) {
+      const fr = location.state.friend
+      const frId = fr.id || routeChatId || `fr_${Date.now()}`
+      setSelectedChat(frId)
+
+      setConversations((prev) => {
+        const exists = prev.some((c) => c.id === frId)
+        if (!exists) {
+          return [
+            {
+              id: frId,
+              name: fr.name || 'Teman ADLD',
+              lastMessage: 'Percakapan baru dimulai 👋',
+              time: 'Baru saja',
+              online: fr.status === 'Online',
+              streak: fr.streak || 1,
+              unread: 0,
+            },
+            ...prev,
+          ]
+        }
+        return prev
+      })
+    }
+  }, [routeChatId, location.state])
+
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem('adld_conversations', JSON.stringify(conversations))
@@ -91,8 +126,6 @@ export default function ChatPage() {
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false)
   const [activeOrderLead, setActiveOrderLead] = useState<{ title: string; price: string; tag: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-
-  const location = useLocation()
   const orderLeadHandled = useRef(false)
 
   // Handle incoming order lead from Catalog
@@ -101,18 +134,18 @@ export default function ChatPage() {
       orderLeadHandled.current = true
       const lead = location.state.orderLead
 
-      const targetConvoId = '1' // Faith / Seller Official
+      const targetConvoId = 'seller_official'
       setSelectedChat(targetConvoId)
       setActiveOrderLead({ title: lead.title, price: lead.price, tag: lead.guestTag })
       soundService.playMessageReceive()
 
-      const orderMsgText = `🛍️ [ORDER KATALOG ADLD]\nHalo @${lead.sellerUsername}! Saya ${lead.guestTag} berminat mengorder:\n📦 ${lead.title} (${lead.price})\nKategori: ${lead.category}\n\nBisakah kita berdiskusi lebih lanjut?`
+      const orderMsgText = `🛍️ [ORDER KATALOG ADLD]\nHalo @${lead.sellerUsername || 'faith'}! Saya ${lead.tag || lead.guestTag} berminat mengorder:\n📦 ${lead.title} (${lead.price})\n\nBisakah kita berdiskusi lebih lanjut?`
 
       const newMsg: ChatMessage = {
         id: `msg_order_${Date.now()}`,
         sender: 'self',
         text: orderMsgText,
-        time: 'Now',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       }
 
       setMessages((prev) => ({
@@ -120,13 +153,28 @@ export default function ChatPage() {
         [targetConvoId]: [...(prev[targetConvoId] || []), newMsg],
       }))
 
-      setConversations((prev) =>
-        prev.map((c) =>
+      setConversations((prev) => {
+        const exists = prev.some((c) => c.id === targetConvoId)
+        if (!exists) {
+          return [
+            {
+              id: targetConvoId,
+              name: `Official Penjual (@${lead.sellerUsername || 'faith'})`,
+              lastMessage: `[Order Lead] ${lead.title}`,
+              time: 'Baru saja',
+              online: true,
+              streak: 1,
+              unread: 0,
+            },
+            ...prev,
+          ]
+        }
+        return prev.map((c) =>
           c.id === targetConvoId
-            ? { ...c, lastMessage: `[Order Lead] ${lead.title}`, time: 'Now' }
+            ? { ...c, lastMessage: `[Order Lead] ${lead.title}`, time: 'Baru saja' }
             : c
         )
-      )
+      })
     }
   }, [location.state])
 
@@ -330,7 +378,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-128px)] md:h-screen bg-background select-none overflow-hidden mt-14 md:mt-0">
+    <div className="flex h-[calc(100vh-120px)] md:h-screen w-full bg-background select-none overflow-hidden">
       {/* Sidebar Chat List */}
       <div
         className={`${

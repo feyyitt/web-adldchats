@@ -47,7 +47,7 @@ export default function HomePage() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="px-4 sm:px-6 md:px-8 pt-16 pb-24 md:py-8 max-w-[1200px] mx-auto min-h-screen select-none space-y-5 sm:space-y-6"
+      className="px-4 sm:px-6 md:px-8 py-6 max-w-[1200px] mx-auto min-h-screen select-none space-y-5 sm:space-y-6"
     >
       {/* Greeting */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

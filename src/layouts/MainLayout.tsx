@@ -23,7 +23,7 @@ export default function MainLayout() {
       <MobileTopHeader />
 
       {/* Main Content */}
-      <main className="flex-1 w-full md:ml-64 pt-[72px] md:pt-0 pb-20 md:pb-0 min-h-screen">
+      <main className="flex-1 w-full md:ml-64 pt-14 md:pt-0 pb-16 md:pb-0 min-h-screen">
         <Outlet />
       </main>
 

@@ -30,8 +30,11 @@ const ICON_PRESETS = [
   { icon: 'movie', name: 'Movies' },
 ]
 
+import { useAuthStore } from '@/stores/authStore'
+
 export default function ProfilePage() {
   const { t } = useTranslation()
+  const { user, profile, setProfile } = useAuthStore()
   const openLogoutConfirm = useLogoutStore((state) => state.openConfirm)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -41,10 +44,12 @@ export default function ProfilePage() {
   const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false)
 
   // Profile data state
-  const [name, setName] = useState('Alex Mercer')
-  const [bio, setBio] = useState(
-    'Digital explorer | Neon nights | Always online. Living for the late night drops and deep conversations. 🌌'
-  )
+  const defaultDisplayName = profile?.display_name || user?.user_metadata?.display_name || 'Faith'
+  const defaultBio = profile?.bio || 'Digital explorer | Neon nights | Always online. Living for the late night drops and deep conversations. 🌌'
+  const username = profile?.username || user?.user_metadata?.username || 'faith'
+
+  const [name, setName] = useState(defaultDisplayName)
+  const [bio, setBio] = useState(defaultBio)
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>(() => {
     return localStorage.getItem('adld-user-avatar') || '/avatars/male_1_clean.png'
   })
@@ -136,7 +141,7 @@ export default function ProfilePage() {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="px-4 md:px-[40px] py-6 md:py-8 pt-20 md:pt-8 pb-28 md:pb-8 max-w-[1200px] mx-auto min-h-screen select-none"
+      className="px-4 md:px-8 py-6 max-w-[1200px] mx-auto min-h-screen select-none"
     >
       {/* Profile Header Bento */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
@@ -179,7 +184,7 @@ export default function ProfilePage() {
                   {name}
                 </h1>
                 <p className="font-body text-body-lg text-emerald-400 font-medium">
-                  @faith
+                  @{username}
                 </p>
               </div>
               <div className="flex gap-2 self-center md:self-auto flex-wrap">

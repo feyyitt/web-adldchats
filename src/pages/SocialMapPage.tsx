@@ -218,7 +218,7 @@ export default function SocialMapPage() {
   }
 
   return (
-    <div className="relative h-[calc(100vh-72px)] md:h-screen w-full bg-[#09090b] overflow-hidden select-none">
+    <div className="relative h-[calc(100vh-120px)] md:h-screen w-full bg-[#09090b] overflow-hidden select-none">
       {/* Real Interactive Leaflet Map Canvas */}
       <div ref={mapContainerRef} className="absolute inset-0 z-0 w-full h-full" />
 
@@ -402,7 +402,7 @@ export default function SocialMapPage() {
               <div className="flex gap-2 pt-1">
                 <motion.button
                   whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate('/chat')}
+                  onClick={() => navigate('/chat/' + selectedMarker.id, { state: { friend: selectedMarker } })}
                   className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-display text-label-sm py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md"
                 >
                   <span className="material-symbols-outlined text-[18px]">chat</span>
@@ -445,19 +445,20 @@ export default function SocialMapPage() {
           <h3 className="font-display text-headline-sm text-on-surface border-b border-white/10 pb-2 font-bold">
             Nearby Friends ({friendsList.length})
           </h3>
-          {friendsList.map((friend) => (
-            <motion.div
-              key={friend.id}
-              whileHover={{ x: 3 }}
-              onClick={() => {
-                setSelectedMarker(friend)
-                if (mapInstanceRef.current) {
-                  mapInstanceRef.current.flyTo([friend.lat, friend.lng], 15, { duration: 1 })
-                }
-                setIsBottomSheetExpanded(false)
-              }}
-              className="flex items-center justify-between p-3 rounded-2xl glass-panel hover:bg-white/10 cursor-pointer transition-all"
-            >
+          {friendsList.length > 0 ? (
+            friendsList.map((friend) => (
+              <motion.div
+                key={friend.id}
+                whileHover={{ x: 3 }}
+                onClick={() => {
+                  setSelectedMarker(friend)
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.flyTo([friend.lat, friend.lng], 15, { duration: 1 })
+                  }
+                  setIsBottomSheetExpanded(false)
+                }}
+                className="flex items-center justify-between p-3 rounded-2xl glass-panel hover:bg-white/10 cursor-pointer transition-all"
+              >
               <div className="flex items-center gap-3">
                 <img
                   src={friend.avatarUrl}
@@ -486,15 +487,33 @@ export default function SocialMapPage() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    navigate('/chat')
+                    navigate('/chat/' + friend.id, { state: { friend } })
                   }}
                   className="p-2 rounded-full glass-panel hover:bg-emerald-600 hover:text-white text-emerald-400 transition-all"
+                  title="Chat"
                 >
                   <span className="material-symbols-outlined text-[18px]">chat</span>
                 </button>
               </div>
             </motion.div>
-          ))}
+          ))
+        ) : (
+          <div className="text-center py-6 space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+              <span className="material-symbols-outlined text-[28px]">person_add</span>
+            </div>
+            <p className="font-body text-xs text-on-surface-variant max-w-xs mx-auto">
+              Belum ada teman di ADLD Maps. Tambahkan teman untuk melihat live location & avatar 3D mereka!
+            </p>
+            <button
+              onClick={() => navigate('/friends')}
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md active:scale-95 transition-all inline-flex items-center gap-1.5 mx-auto"
+            >
+              <span className="material-symbols-outlined text-[16px]">person_add</span>
+              <span>Buka Daftar Teman</span>
+            </button>
+          </div>
+        )}
         </div>
       </div>
 
