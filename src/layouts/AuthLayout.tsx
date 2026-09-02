@@ -1,7 +1,14 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { useAuthStore } from '@/stores/authStore'
 
 export default function AuthLayout() {
+  const user = useAuthStore((state) => state.user)
+
+  // If already logged in, redirect to home
+  if (user) {
+    return <Navigate to="/" replace />
+  }
   return (
     <div className="min-h-screen bg-[#09090b] text-on-surface flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden select-none">
       {/* Ambient Background Radial Blur Blobs */}

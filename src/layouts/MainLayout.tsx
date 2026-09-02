@@ -7,7 +7,12 @@ import ToastNotification from '@/components/common/ToastNotification'
 import { useAuthStore } from '@/stores/authStore'
 
 export default function MainLayout() {
-  const isGuest = useAuthStore((state) => state.isGuest)
+  const { user, isGuest } = useAuthStore()
+
+  // Protect private application routes: unauthenticated visitors must log in
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
 
   // Strict Security Protection: Guests cannot access internal private app routes
   if (isGuest) {

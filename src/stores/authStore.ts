@@ -31,22 +31,50 @@ export interface UserProfile {
   updated_at: string
 }
 
+const initialUser = (() => {
+  try {
+    const saved = localStorage.getItem('adld_auth_user')
+    if (saved) return JSON.parse(saved)
+  } catch {}
+  return null
+})()
+
+const initialProfile = (() => {
+  try {
+    const saved = localStorage.getItem('adld_auth_profile')
+    if (saved) return JSON.parse(saved)
+  } catch {}
+  return null
+})()
+
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
+  user: initialUser,
   session: null,
-  profile: null,
-  isLoading: true,
-  isAuthenticated: false,
+  profile: initialProfile,
+  isLoading: false,
+  isAuthenticated: !!initialUser,
   isGuest: false,
 
-  setUser: (user) =>
-    set({ user, isAuthenticated: !!user, isGuest: false }),
+  setUser: (user) => {
+    if (user) {
+      localStorage.setItem('adld_auth_user', JSON.stringify(user))
+    } else {
+      localStorage.removeItem('adld_auth_user')
+    }
+    set({ user, isAuthenticated: !!user, isGuest: false })
+  },
 
   setSession: (session) =>
     set({ session }),
 
-  setProfile: (profile) =>
-    set({ profile }),
+  setProfile: (profile) => {
+    if (profile) {
+      localStorage.setItem('adld_auth_profile', JSON.stringify(profile))
+    } else {
+      localStorage.removeItem('adld_auth_profile')
+    }
+    set({ profile })
+  },
 
   setLoading: (isLoading) =>
     set({ isLoading }),
@@ -75,6 +103,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       updated_at: new Date().toISOString(),
     }
 
+    localStorage.setItem('adld_auth_user', JSON.stringify(guestUser))
+    localStorage.setItem('adld_auth_profile', JSON.stringify(guestProfile))
+
     set({
       user: guestUser,
       profile: guestProfile,
@@ -83,12 +114,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     })
   },
 
-  logout: () =>
+  logout: () => {
+    localStorage.removeItem('adld_auth_user')
+    localStorage.removeItem('adld_auth_profile')
     set({
       user: null,
       session: null,
       profile: null,
       isAuthenticated: false,
       isGuest: false,
-    }),
+    })
+  },
 }))
