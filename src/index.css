@@ -232,12 +232,18 @@ body {
   padding-top: max(0.5rem, env(safe-area-inset-top));
 }
 
-/* Modal Card anti-shrink rule to fix flexbox squeezing */
+/* Modal Card & Empty State Panel anti-shrink rules to fix flexbox squeezing */
 .modal-card {
   width: 90vw !important;
   max-width: 460px !important;
   min-width: 300px !important;
   flex-shrink: 0 !important;
+}
+
+.empty-card-panel {
+  width: 100% !important;
+  max-width: 520px !important;
+  min-width: 280px !important;
 }
 
 /* ================================================

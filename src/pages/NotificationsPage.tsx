@@ -58,17 +58,19 @@ export default function NotificationsPage() {
           ))}
         </div>
       ) : (
-        <div className="glass-panel rounded-3xl p-10 text-center w-full max-w-lg mx-auto border border-white/10 space-y-3">
+        <div className="w-full flex items-center justify-center py-8">
+          <div className="glass-panel empty-card-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/40 flex items-center justify-center mx-auto">
             <span className="material-symbols-outlined text-[36px]">notifications_off</span>
           </div>
-          <div className="space-y-1">
-            <h3 className="font-display text-headline-sm text-white font-bold">
-              Belum Ada Notifikasi
-            </h3>
-            <p className="font-body text-xs text-on-surface-variant">
-              Semua pemberitahuan baru terkait aktivitas obrolan atau pesanan akan muncul di sini.
-            </p>
+            <div className="space-y-1">
+              <h3 className="font-display text-headline-sm text-white font-bold">
+                Belum Ada Notifikasi
+              </h3>
+              <p className="font-body text-xs text-on-surface-variant">
+                Semua pemberitahuan baru terkait aktivitas obrolan atau pesanan akan muncul di sini.
+              </p>
+            </div>
           </div>
         </div>
       )}

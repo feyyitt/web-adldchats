@@ -15,7 +15,7 @@ export default function MainLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-on-background font-body flex">
+    <div className="min-h-screen bg-background text-on-background font-body relative">
       {/* Desktop Sidebar */}
       <DesktopSidebar />
 
@@ -23,7 +23,7 @@ export default function MainLayout() {
       <MobileTopHeader />
 
       {/* Main Content */}
-      <main className="flex-1 w-full md:ml-64 pt-14 md:pt-0 pb-16 md:pb-0 min-h-screen">
+      <main className="w-full md:pl-64 pt-14 md:pt-0 pb-16 md:pb-0 min-h-screen">
         <Outlet />
       </main>
 
