@@ -177,68 +177,68 @@ export default function ProfilePage() {
           </div>
 
           {/* Details */}
-          <div className="flex-1 text-center md:text-left">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
-              <div>
-                <h1 className="font-display text-headline-lg text-on-surface font-bold">
+          <div className="flex-1 w-full min-w-0 text-center md:text-left space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="font-display text-2xl sm:text-3xl text-on-surface font-bold truncate">
                   {name}
                 </h1>
-                <p className="font-body text-body-lg text-emerald-400 font-medium">
+                <p className="font-body text-base text-emerald-400 font-semibold truncate">
                   @{username}
                 </p>
               </div>
-              <div className="flex gap-2 self-center md:self-auto flex-wrap">
+              <div className="flex gap-2 self-center md:self-auto flex-wrap justify-center md:justify-end">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleTriggerUpload}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-body text-label-md px-4 py-2 rounded-full transition-all flex items-center justify-center gap-2 shadow-md"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-body text-xs sm:text-label-md px-3.5 sm:px-4 py-2 rounded-full transition-all flex items-center justify-center gap-1.5 shadow-md font-bold"
                 >
-                  <span className="material-symbols-outlined text-[18px]">photo_camera</span>
-                  Upload Foto Asli
+                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">photo_camera</span>
+                  Upload Foto
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setIsAvatarModalOpen(true)}
-                  className="glass-panel text-on-surface font-body text-label-md px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 hover:bg-white/10"
+                  className="glass-panel text-on-surface font-body text-xs sm:text-label-md px-3.5 sm:px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-1.5 hover:bg-white/10"
                 >
-                  <span className="material-symbols-outlined text-[18px]">style</span>
+                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">style</span>
                   Pilih Avatar 3D
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setIsEditing(true)}
-                  className="glass-panel text-on-surface font-body text-label-md px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-2 hover:bg-white/10"
+                  className="glass-panel text-on-surface font-body text-xs sm:text-label-md px-3.5 sm:px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-1.5 hover:bg-white/10"
                 >
-                  <span className="material-symbols-outlined text-[18px]">edit</span>
+                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">edit</span>
                   {t('profile.editProfile')}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={openLogoutConfirm}
-                  className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-400 font-body text-label-md px-4 py-2 rounded-full transition-all flex items-center justify-center gap-2"
+                  className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-400 font-body text-xs sm:text-label-md px-3.5 sm:px-4 py-2 rounded-full transition-all flex items-center justify-center gap-1.5"
                   title="Logout"
                 >
-                  <span className="material-symbols-outlined text-[18px]">logout</span>
+                  <span className="material-symbols-outlined text-[16px] sm:text-[18px]">logout</span>
                   Logout
                 </motion.button>
               </div>
             </div>
 
-            <p className="font-body text-body-md text-on-surface-variant mb-6 max-w-lg">
+            <p className="font-body text-sm sm:text-base text-on-surface-variant leading-relaxed break-words w-full">
               {bio}
             </p>
 
             {/* Editable Interest & Status Badges */}
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1">
               {badges.map((badge) => (
                 <span
                   key={badge.id}
                   onClick={() => setIsBadgeModalOpen(true)}
-                  className={`px-3 py-1 rounded-full bg-zinc-800/80 border ${badge.colorClass} font-body text-label-sm flex items-center gap-1.5 cursor-pointer hover:bg-zinc-700/80 transition-all`}
+                  className={`px-3 py-1 rounded-full bg-zinc-800/80 border ${badge.colorClass} font-body text-xs sm:text-label-sm flex items-center gap-1.5 cursor-pointer hover:bg-zinc-700/80 transition-all font-semibold`}
                   title="Click to edit badges"
                 >
                   <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -250,7 +250,7 @@ export default function ProfilePage() {
 
               <button
                 onClick={() => setIsBadgeModalOpen(true)}
-                className="px-3 py-1 rounded-full bg-zinc-800/60 hover:bg-emerald-500/20 border border-dashed border-white/20 hover:border-emerald-500 text-on-surface-variant hover:text-emerald-400 font-body text-label-sm flex items-center gap-1 transition-all"
+                className="px-3 py-1 rounded-full bg-zinc-800/60 hover:bg-emerald-500/20 border border-dashed border-white/20 hover:border-emerald-500 text-on-surface-variant hover:text-emerald-400 font-body text-xs sm:text-label-sm flex items-center gap-1 transition-all"
                 title="Add or Edit Badges"
               >
                 <span className="material-symbols-outlined text-[14px]">add</span>

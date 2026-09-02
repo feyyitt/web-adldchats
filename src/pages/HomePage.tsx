@@ -180,21 +180,21 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/40 flex items-center justify-center mx-auto">
-                  <span className="material-symbols-outlined text-[28px]">chat_bubble_outline</span>
+              <div className="text-center py-10 px-4 space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
+                  <span className="material-symbols-outlined text-[30px]">chat_bubble_outline</span>
                 </div>
-                <div className="space-y-1">
-                  <h4 className="font-display font-bold text-white text-sm">Belum Ada Obrolan Aktif</h4>
-                  <p className="font-body text-xs text-on-surface-variant max-w-xs mx-auto">
-                    Mulai percakapan baru dengan teman atau pelanggan katalog bisnis Anda.
+                <div className="space-y-1.5 max-w-md mx-auto">
+                  <h4 className="font-display font-bold text-white text-base">Belum Ada Obrolan Aktif</h4>
+                  <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+                    Mulai percakapan baru dengan teman Anda atau berdiskusi dengan penjual katalog bisnis.
                   </p>
                 </div>
                 <button
                   onClick={() => navigate('/chat')}
-                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold transition-all shadow-md active:scale-95 inline-flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold transition-all shadow-md active:scale-95 inline-flex items-center gap-2 mx-auto"
                 >
-                  <span className="material-symbols-outlined text-[16px]">add_comment</span>
+                  <span className="material-symbols-outlined text-[18px]">add_comment</span>
                   <span>Mulai Obrolan Baru</span>
                 </button>
               </div>

@@ -58,7 +58,7 @@ export default function NotificationsPage() {
           ))}
         </div>
       ) : (
-        <div className="glass-panel rounded-3xl p-10 text-center w-full max-w-sm mx-auto border border-white/10 space-y-3">
+        <div className="glass-panel rounded-3xl p-10 text-center w-full max-w-lg mx-auto border border-white/10 space-y-3">
           <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/40 flex items-center justify-center mx-auto">
             <span className="material-symbols-outlined text-[36px]">notifications_off</span>
           </div>

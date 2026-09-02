@@ -245,7 +245,7 @@ export default function FriendsPage() {
             </div>
           ) : (
             <div className="w-full flex items-center justify-center py-8">
-              <div className="glass-panel rounded-3xl p-10 text-center w-full max-w-sm border border-white/10 space-y-5">
+              <div className="glass-panel rounded-3xl p-10 text-center w-full max-w-lg border border-white/10 space-y-5">
                 <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
                   <span className="material-symbols-outlined text-[36px]">group</span>
                 </div>
