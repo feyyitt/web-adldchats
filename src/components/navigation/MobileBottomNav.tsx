@@ -19,15 +19,15 @@ export default function MobileBottomNav() {
   ]
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface-container-lowest/95 backdrop-blur-2xl border-t border-white/10 safe-area-bottom select-none">
-      <div className="grid grid-cols-5 items-center h-16 px-1 w-full max-w-md mx-auto text-center">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/95 backdrop-blur-2xl border-t border-white/10 safe-area-bottom select-none shadow-2xl">
+      <div className="flex items-center justify-around h-16 px-2 w-full max-w-lg mx-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center py-1 px-0.5 rounded-xl transition-all w-full ${
+              `flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all flex-1 text-center ${
                 isActive
                   ? 'text-emerald-400 bg-emerald-500/15 font-bold'
                   : 'text-on-surface-variant hover:text-on-surface'
@@ -37,14 +37,14 @@ export default function MobileBottomNav() {
             {({ isActive }) => (
               <>
                 <span
-                  className="material-symbols-outlined text-[20px]"
+                  className="material-symbols-outlined text-[22px]"
                   style={{
                     fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
                   }}
                 >
                   {item.icon}
                 </span>
-                <span className="text-[9px] sm:text-[10px] font-semibold tracking-tighter truncate w-full block text-center leading-none mt-0.5">
+                <span className="text-[10px] font-semibold tracking-tight truncate block text-center leading-tight mt-0.5">
                   {item.label}
                 </span>
               </>
