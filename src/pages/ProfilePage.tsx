@@ -340,27 +340,27 @@ export default function ProfilePage() {
 
       {/* Tab Contents */}
       {activeTab === 'highlights' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4 flex justify-center">
-          <div className="w-full max-w-xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '300px' }}>
+        <div className="w-full flex items-center justify-center py-8">
+          <div className="glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-5 w-full max-w-lg mx-auto" style={{ minWidth: '280px' }}>
             <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
-              <span className="material-symbols-outlined text-[32px]">stars</span>
+              <span className="material-symbols-outlined text-[36px]">stars</span>
             </div>
-            <div className="w-full space-y-2 text-center">
-              <h4 className="font-display font-bold text-white text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+            <div className="space-y-2">
+              <h3 className="font-display text-lg text-white font-bold block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                 Belum Ada Sorotan
-              </h4>
-              <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full max-w-md mx-auto text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+              </h3>
+              <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                 Sorotan cerita dan pencapaian profil Anda akan tampil di sini.
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {activeTab === 'recent' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4 flex justify-center">
+        <>
           {recentConversations.length > 0 ? (
-            <div className="space-y-3 max-w-2xl mx-auto w-full">
+            <div className="space-y-3 max-w-2xl mx-auto w-full py-4">
               {recentConversations.map((c: any) => (
                 <div key={c.id} className="glass-panel rounded-2xl p-4 flex items-center gap-4 border border-white/10">
                   <div className="p-3 rounded-full bg-emerald-500/10 text-emerald-400 flex-shrink-0">
@@ -378,45 +378,47 @@ export default function ProfilePage() {
               ))}
             </div>
           ) : (
-            <div className="w-full max-w-xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '300px' }}>
-              <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/50 flex items-center justify-center mx-auto shadow-inner">
-                <span className="material-symbols-outlined text-[32px]">history</span>
-              </div>
-              <div className="w-full space-y-2 text-center">
-                <h4 className="font-display font-bold text-white text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
-                  Belum Ada Aktivitas Terbaru
-                </h4>
-                <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full max-w-md mx-auto text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
-                  Aktivitas obrolan dan interaksi Anda akan dicatat di sini.
-                </p>
+            <div className="w-full flex items-center justify-center py-8">
+              <div className="glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-5 w-full max-w-lg mx-auto" style={{ minWidth: '280px' }}>
+                <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/50 flex items-center justify-center mx-auto shadow-inner">
+                  <span className="material-symbols-outlined text-[36px]">history</span>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-display text-lg text-white font-bold block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+                    Belum Ada Aktivitas Terbaru
+                  </h3>
+                  <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+                    Aktivitas obrolan dan interaksi Anda akan dicatat di sini.
+                  </p>
+                </div>
               </div>
             </div>
           )}
-        </motion.div>
+        </>
       )}
 
       {activeTab === 'media' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4 flex justify-center">
-          <div className="w-full max-w-xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '300px' }}>
+        <div className="w-full flex items-center justify-center py-8">
+          <div className="glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-5 w-full max-w-lg mx-auto" style={{ minWidth: '280px' }}>
             <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/50 flex items-center justify-center mx-auto shadow-inner">
-              <span className="material-symbols-outlined text-[32px]">photo_library</span>
+              <span className="material-symbols-outlined text-[36px]">photo_library</span>
             </div>
-            <div className="w-full space-y-2 text-center">
-              <h4 className="font-display font-bold text-white text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+            <div className="space-y-2">
+              <h3 className="font-display text-lg text-white font-bold block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                 Belum Ada Media
-              </h4>
-              <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full max-w-md mx-auto text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+              </h3>
+              <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                 Foto dan file yang Anda bagikan di obrolan akan muncul di sini.
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {activeTab === 'mutuals' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full py-4 flex justify-center">
+        <>
           {friendsList.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto w-full py-4">
               {friendsList.map((f: any) => (
                 <div key={f.id} className="glass-panel rounded-2xl p-4 flex items-center gap-3 border border-white/10">
                   <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10 overflow-hidden flex-shrink-0">
@@ -434,21 +436,23 @@ export default function ProfilePage() {
               ))}
             </div>
           ) : (
-            <div className="w-full max-w-xl mx-auto glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-4" style={{ minWidth: '300px' }}>
-              <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/50 flex items-center justify-center mx-auto shadow-inner">
-                <span className="material-symbols-outlined text-[32px]">group_off</span>
-              </div>
-              <div className="w-full space-y-2 text-center">
-                <h4 className="font-display font-bold text-white text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
-                  Belum Ada Teman Terhubung
-                </h4>
-                <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full max-w-md mx-auto text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
-                  Teman yang Anda tambahkan di ADLD Chats akan tampil di daftar ini.
-                </p>
+            <div className="w-full flex items-center justify-center py-8">
+              <div className="glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-5 w-full max-w-lg mx-auto" style={{ minWidth: '280px' }}>
+                <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-white/10 text-on-surface-variant/50 flex items-center justify-center mx-auto shadow-inner">
+                  <span className="material-symbols-outlined text-[36px]">group_off</span>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-display text-lg text-white font-bold block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+                    Belum Ada Teman Terhubung
+                  </h3>
+                  <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
+                    Teman yang Anda tambahkan di ADLD Chats akan tampil di daftar ini.
+                  </p>
+                </div>
               </div>
             </div>
           )}
-        </motion.div>
+        </>
       )}
 
       {/* Hidden File Input for Real Photo Upload */}
