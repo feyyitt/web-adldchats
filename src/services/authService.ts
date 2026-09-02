@@ -148,7 +148,7 @@ export const authService = {
 
     return {
       id: userId,
-      username: 'faith',
+      username: updates.username || 'faith',
       display_name: updates.display_name || 'Faith',
       avatar_url: updates.avatar_url || '/avatars/male_1_clean.png',
       bio: updates.bio || 'Digital explorer 🌌',

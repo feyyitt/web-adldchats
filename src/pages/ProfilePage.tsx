@@ -31,11 +31,14 @@ const ICON_PRESETS = [
 ]
 
 import { useAuthStore } from '@/stores/authStore'
+import { useToastStore } from '@/stores/toastStore'
+import { authService } from '@/services/authService'
 
 export default function ProfilePage() {
   const { t } = useTranslation()
-  const { user, profile, setProfile } = useAuthStore()
+  const { user, profile, setUser, setProfile } = useAuthStore()
   const openLogoutConfirm = useLogoutStore((state) => state.openConfirm)
+  const showToast = useToastStore((state) => state.showToast)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const [activeTab, setActiveTab] = useState('highlights')
@@ -44,12 +47,14 @@ export default function ProfilePage() {
   const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false)
 
   // Profile data state
-  const defaultDisplayName = profile?.display_name || user?.user_metadata?.display_name || 'Faith'
-  const rawBio = profile?.bio || 'Halo! Selamat datang di profil ADLD Chats saya. Siap terhubung dan berdiskusi! 🚀'
+  const defaultDisplayName = profile?.display_name || user?.user_metadata?.display_name || localStorage.getItem('adld-user-name') || 'Faith'
+  const rawBio = profile?.bio || localStorage.getItem('adld-user-bio') || 'Halo! Selamat datang di profil ADLD Chats saya. Siap terhubung dan berdiskusi! 🚀'
   const defaultBio = rawBio.includes('Digital explorer |') ? 'Halo! Selamat datang di profil ADLD Chats saya. Siap terhubung dan berdiskusi! 🚀' : rawBio
-  const username = profile?.username || user?.user_metadata?.username || 'faith'
+  const defaultUsername = profile?.username || user?.user_metadata?.username || localStorage.getItem('adld-user-username') || 'faith'
 
   const [name, setName] = useState(defaultDisplayName)
+  const [username, setUsername] = useState(defaultUsername)
+  const [editUsername, setEditUsername] = useState(defaultUsername)
   const [bio, setBio] = useState(defaultBio)
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>(() => {
     return localStorage.getItem('adld-user-avatar') || '/avatars/male_1_clean.png'
@@ -655,77 +660,177 @@ export default function ProfilePage() {
               initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="glass-panel modal-card rounded-3xl p-6 space-y-4 border border-white/10 shadow-2xl"
+              className="glass-panel modal-card rounded-3xl p-6 space-y-4 border border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                <h3 className="font-display text-headline-md text-on-surface font-bold">Edit Profile</h3>
-                <button onClick={() => setIsEditing(false)} className="text-on-surface-variant hover:text-on-surface">
-                  <span className="material-symbols-outlined">close</span>
+                <div>
+                  <h3 className="font-display text-headline-sm text-on-surface font-bold">Edit Profil & Akun</h3>
+                  <p className="font-body text-xs text-on-surface-variant">Ubah nama lengkap/panggilan, username, dan bio Anda</p>
+                </div>
+                <button onClick={() => setIsEditing(false)} className="text-on-surface-variant hover:text-on-surface p-1">
+                  <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
               </div>
 
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault()
+                  if (!name.trim() || !editUsername.trim()) return
+
+                  const cleanUsername = editUsername.toLowerCase().trim().replace(/[^a-z0-9_]/g, '')
+                  const cleanDisplayName = name.trim()
+
+                  // 1. Update Auth Store user
+                  const updatedUser = user ? {
+                    ...user,
+                    user_metadata: {
+                      ...user.user_metadata,
+                      display_name: cleanDisplayName,
+                      username: cleanUsername,
+                    }
+                  } : null
+
+                  if (updatedUser) setUser(updatedUser)
+
+                  // 2. Update Auth Store profile
+                  const updatedProfile = {
+                    ...(profile || {}),
+                    id: user?.id || 'usr_current',
+                    display_name: cleanDisplayName,
+                    username: cleanUsername,
+                    bio: bio.trim(),
+                    avatar_url: userAvatarUrl,
+                    updated_at: new Date().toISOString(),
+                  } as any
+
+                  setProfile(updatedProfile)
+
+                  // 3. Persist to localStorage
+                  localStorage.setItem('adld-user-name', cleanDisplayName)
+                  localStorage.setItem('adld-user-username', cleanUsername)
+                  localStorage.setItem('adld-user-bio', bio.trim())
+
+                  // 4. Update local component state
+                  setName(cleanDisplayName)
+                  setUsername(cleanUsername)
+
+                  // 5. Update Supabase if authenticated
+                  try {
+                    if (user?.id) {
+                      await authService.updateProfile(user.id, {
+                        display_name: cleanDisplayName,
+                        username: cleanUsername,
+                        bio: bio.trim(),
+                      })
+                    }
+                  } catch {}
+
+                  // 6. Broadcast change
+                  window.dispatchEvent(new Event('adld-profile-updated'))
+                  
+                  // 7. Show success toast and close
+                  showToast('Profil dan Username berhasil diperbarui!', 'success')
                   setIsEditing(false)
                 }}
                 className="space-y-4"
               >
+                {/* Display Name / Nama Panggilan */}
                 <div>
-                  <label className="block font-body text-label-md text-on-surface mb-1 font-semibold">Display Name</label>
+                  <label className="block font-body text-xs font-bold text-on-surface mb-1.5">
+                    Nama Lengkap / Panggilan
+                  </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-zinc-800 border border-white/10 text-on-surface font-body text-body-md rounded-xl p-3 focus:outline-none focus:border-emerald-500"
+                    placeholder="Contoh: Faith, Jonathan, dll"
+                    className="w-full bg-zinc-800 border border-white/10 text-on-surface font-body text-sm rounded-xl p-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-zinc-500"
                     required
                   />
+                  <p className="font-body text-[11px] text-on-surface-variant/70 mt-1">
+                    Nama ini akan dilihat oleh teman Anda di daftar obrolan dan pencarian.
+                  </p>
                 </div>
 
+                {/* Username */}
                 <div>
-                  <label className="block font-body text-label-md text-on-surface mb-1 font-semibold">Bio</label>
+                  <label className="block font-body text-xs font-bold text-on-surface mb-1.5">
+                    Username Akun (@username)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400 font-bold text-sm">
+                      @
+                    </span>
+                    <input
+                      type="text"
+                      value={editUsername}
+                      onChange={(e) => setEditUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                      placeholder="username_anda"
+                      className="w-full bg-zinc-800 border border-white/10 text-on-surface font-body text-sm rounded-xl pl-8 pr-3 py-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-zinc-500 font-medium"
+                      required
+                    />
+                  </div>
+                  <p className="font-body text-[11px] text-on-surface-variant/70 mt-1">
+                    Gunakan huruf kecil, angka, dan underscore (_). Digunakan teman untuk menambah kontak.
+                  </p>
+                </div>
+
+                {/* Bio */}
+                <div>
+                  <label className="block font-body text-xs font-bold text-on-surface mb-1.5">
+                    Bio & Status Profil
+                  </label>
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tuliskan bio atau deskripsi profil Anda..."
                     rows={3}
-                    className="w-full bg-zinc-800 border border-white/10 text-on-surface font-body text-body-md rounded-xl p-3 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-zinc-800 border border-white/10 text-on-surface font-body text-sm rounded-xl p-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-zinc-500 leading-relaxed"
                   />
                 </div>
 
                 {/* Avatar Selector Trigger */}
                 <div>
-                  <label className="block font-body text-label-md text-on-surface mb-2 font-semibold">3D Character Avatar</label>
+                  <label className="block font-body text-xs font-bold text-on-surface mb-1.5">
+                    Foto Profil & Avatar 3D
+                  </label>
                   <div
                     onClick={() => {
                       setIsEditing(false)
                       setIsAvatarModalOpen(true)
                     }}
-                    className="p-3 rounded-2xl glass-panel border border-white/10 flex items-center justify-between cursor-pointer hover:border-emerald-500 transition-colors"
+                    className="p-3 rounded-2xl glass-panel border border-white/10 flex items-center justify-between cursor-pointer hover:border-emerald-500 hover:bg-emerald-500/5 transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <img src={userAvatarUrl} alt="Selected Avatar" className="w-10 h-12 object-contain" />
+                      <img src={userAvatarUrl} alt="Selected Avatar" className="w-10 h-10 object-cover rounded-xl border border-white/10" />
                       <div>
-                        <p className="font-body text-label-md text-on-surface font-semibold">Change 3D Male Avatar</p>
-                        <p className="font-body text-xs text-emerald-400">16 styles available</p>
+                        <p className="font-body text-xs text-on-surface font-bold">Ganti Foto Profil / Avatar 3D</p>
+                        <p className="font-body text-[11px] text-emerald-400 font-medium">16 karakter 3D & Upload Foto Asli</p>
                       </div>
                     </div>
-                    <span className="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+                    <span className="material-symbols-outlined text-on-surface-variant text-[20px]">chevron_right</span>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-2">
+                <div className="flex justify-end gap-3 pt-3 border-t border-white/10">
                   <button
                     type="button"
-                    onClick={() => setIsEditing(false)}
-                    className="px-4 py-2 rounded-xl glass-panel text-on-surface-variant hover:text-on-surface font-semibold"
+                    onClick={() => {
+                      setName(defaultDisplayName)
+                      setEditUsername(defaultUsername)
+                      setBio(defaultBio)
+                      setIsEditing(false)
+                    }}
+                    className="px-4 py-2.5 rounded-xl glass-panel text-on-surface-variant hover:text-on-surface font-bold text-xs transition-colors"
                   >
-                    Cancel
+                    Batal
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-label-md shadow-md"
+                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold shadow-md transition-all active:scale-95 flex items-center gap-1.5"
                   >
-                    Save Profile
+                    <span className="material-symbols-outlined text-[16px]">save</span>
+                    Simpan Perubahan
                   </button>
                 </div>
               </form>
