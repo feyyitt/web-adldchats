@@ -245,15 +245,15 @@ export default function FriendsPage() {
             </div>
           ) : (
             <div className="w-full flex items-center justify-center py-8">
-              <div className="glass-panel empty-card-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-5">
+              <div className="glass-panel rounded-3xl p-8 sm:p-10 text-center border border-white/10 space-y-5 w-full max-w-lg mx-auto" style={{ minWidth: '280px' }}>
                 <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
                   <span className="material-symbols-outlined text-[36px]">group</span>
                 </div>
                 <div className="space-y-2">
-                  <h3 className="empty-state-title font-display text-lg text-white font-bold">
+                  <h3 className="font-display text-lg text-white font-bold block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                     Belum Ada Teman Terhubung
                   </h3>
-                  <p className="empty-state-desc font-body text-sm text-on-surface-variant">
+                  <p className="font-body text-sm text-on-surface-variant leading-relaxed block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                     Mulai jalin percakapan dengan menambahkan teman baru melalui username.
                   </p>
                 </div>

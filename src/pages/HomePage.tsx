@@ -180,15 +180,15 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="w-full text-center py-10 px-4 space-y-4">
+              <div className="w-full text-center py-12 px-4 space-y-4">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
                   <span className="material-symbols-outlined text-[30px]">chat_bubble_outline</span>
                 </div>
-                <div className="w-full max-w-md mx-auto space-y-1.5 text-center">
-                  <h4 className="empty-state-title font-display font-bold text-white text-base sm:text-lg">
+                <div className="w-full max-w-lg mx-auto space-y-2 text-center" style={{ minWidth: '280px' }}>
+                  <h4 className="font-display font-bold text-white text-base sm:text-lg block w-full text-center" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                     Belum Ada Obrolan Aktif
                   </h4>
-                  <p className="empty-state-desc font-body text-xs sm:text-sm text-on-surface-variant">
+                  <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed block w-full text-center max-w-md mx-auto" style={{ wordBreak: 'normal', whiteSpace: 'normal' }}>
                     Mulai percakapan baru dengan teman Anda atau berdiskusi dengan penjual katalog bisnis.
                   </p>
                 </div>
