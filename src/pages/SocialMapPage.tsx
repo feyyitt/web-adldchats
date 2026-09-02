@@ -498,20 +498,27 @@ export default function SocialMapPage() {
             </motion.div>
           ))
         ) : (
-          <div className="text-center py-6 space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
-              <span className="material-symbols-outlined text-[28px]">person_add</span>
+          <div className="glass-panel empty-card-panel rounded-3xl p-6 sm:p-8 text-center border border-white/10 space-y-4 mx-auto my-2">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-md">
+              <span className="material-symbols-outlined text-[30px]">person_add</span>
             </div>
-            <p className="font-body text-xs text-on-surface-variant max-w-xs mx-auto">
-              Belum ada teman di ADLD Maps. Tambahkan teman untuk melihat live location & avatar 3D mereka!
-            </p>
-            <button
-              onClick={() => navigate('/friends')}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md active:scale-95 transition-all inline-flex items-center gap-1.5 mx-auto"
-            >
-              <span className="material-symbols-outlined text-[16px]">person_add</span>
-              <span>Buka Daftar Teman</span>
-            </button>
+            <div className="space-y-1.5 w-full text-center">
+              <h4 className="empty-state-title font-display font-bold text-white text-base">
+                Belum Ada Teman di Sekitar
+              </h4>
+              <p className="empty-state-desc font-body text-xs sm:text-sm text-on-surface-variant">
+                Belum ada teman di ADLD Maps. Tambahkan teman untuk melihat live location & avatar 3D mereka!
+              </p>
+            </div>
+            <div className="pt-2 flex justify-center w-full">
+              <button
+                onClick={() => navigate('/friends')}
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold shadow-lg active:scale-95 transition-all inline-flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">person_add</span>
+                <span>Buka Daftar Teman</span>
+              </button>
+            </div>
           </div>
         )}
         </div>
