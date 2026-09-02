@@ -180,13 +180,13 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-10 px-4 space-y-4">
+              <div className="w-full text-center py-10 px-4 space-y-4 flex flex-col items-center justify-center">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
                   <span className="material-symbols-outlined text-[30px]">chat_bubble_outline</span>
                 </div>
-                <div className="space-y-1.5 max-w-md mx-auto">
-                  <h4 className="font-display font-bold text-white text-base">Belum Ada Obrolan Aktif</h4>
-                  <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+                <div className="w-full max-w-md mx-auto space-y-1.5 text-center">
+                  <h4 className="font-display font-bold text-white text-base w-full">Belum Ada Obrolan Aktif</h4>
+                  <p className="font-body text-xs sm:text-sm text-on-surface-variant leading-relaxed w-full">
                     Mulai percakapan baru dengan teman Anda atau berdiskusi dengan penjual katalog bisnis.
                   </p>
                 </div>
