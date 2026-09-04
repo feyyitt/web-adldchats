@@ -5,7 +5,7 @@ import OrderInvoiceModal from '@/components/catalog/OrderInvoiceModal'
 import type { InvoiceData } from '@/components/catalog/OrderInvoiceModal'
 import { soundService } from '@/services/soundService'
 import VoiceNotePlayer from '@/components/chat/VoiceNotePlayer'
-import { realtimeSync, type RealtimeChatMessage } from '@/services/realtimeSync'
+import { realtimeSync, type RealtimeChatMessage, CURRENT_TAB_ID, type MessageStatusReceipt } from '@/services/realtimeSync'
 import { useAuthStore } from '@/stores/authStore'
 
 interface ChatMessage {
@@ -13,6 +13,7 @@ interface ChatMessage {
   sender: 'self' | 'other'
   text: string
   time: string
+  status?: 'sent' | 'delivered' | 'read'
   type?: 'text' | 'image' | 'voice' | 'location' | 'file' | 'invoice'
   mediaUrl?: string
   reactions?: string[]
@@ -177,35 +178,48 @@ export default function ChatPage() {
   // Realtime Incoming Message Subscription (Supabase Realtime + BroadcastChannel + LocalStorage)
   useEffect(() => {
     const unsubscribe = realtimeSync.onMessage((incoming) => {
-      // Ignore if sent by myself
-      if (
-        incoming.fromUserId === currentUserId ||
-        (incoming.fromUserName && incoming.fromUserName.toLowerCase() === currentDisplayName.toLowerCase())
-      ) {
+      // 1. Ignore if sent by this exact browser tab
+      if (incoming.senderTabId && incoming.senderTabId === CURRENT_TAB_ID) {
         return
       }
 
-      // Check if addressed to me or a public conversation
+      // 2. Comprehensive recipient check
       const cleanTo = (incoming.toUserId || '').replace('@', '').replace('usr_', '').toLowerCase()
-      const cleanMe = currentUsername.replace('@', '').replace('usr_', '').toLowerCase()
+      const cleanToName = (incoming.toUserName || '').toLowerCase()
+      const cleanMeUser = currentUsername.replace('@', '').replace('usr_', '').toLowerCase()
+      const cleanMeId = currentUserId.replace('@', '').replace('usr_', '').toLowerCase()
+      const cleanFromUser = (incoming.fromUsername || '').replace('@', '').replace('usr_', '').toLowerCase()
+
       const isTargetedToMe =
         !incoming.toUserId ||
-        cleanTo === cleanMe ||
+        cleanTo === 'all' ||
+        cleanTo === cleanMeUser ||
+        cleanTo === cleanMeId ||
+        cleanToName === currentDisplayName.toLowerCase() ||
         incoming.toUserId === currentUserId ||
         incoming.conversationId === currentUserId ||
-        incoming.conversationId === `usr_${cleanMe}`
+        incoming.conversationId === `usr_${cleanMeUser}` ||
+        // Also allow testing between 2 tabs under same user (sync outgoing message to other tab)
+        (incoming.fromUserId === currentUserId && incoming.senderTabId !== CURRENT_TAB_ID)
 
       if (!isTargetedToMe) {
         return
       }
 
-      const convoId = incoming.fromUserId || `usr_${incoming.fromUserName.toLowerCase()}`
+      // 3. Determine conversation ID on receiver's end
+      const isMyOwnFromAnotherTab = incoming.fromUserId === currentUserId
+      const convoId = isMyOwnFromAnotherTab
+        ? incoming.conversationId || incoming.toUserId
+        : incoming.fromUserId || `usr_${cleanFromUser || incoming.fromUserName.toLowerCase()}`
+
+      const isCurrentlyViewingThisChat = selectedChat === convoId
 
       const incomingMsg: ChatMessage = {
         id: incoming.id || `msg_${Date.now()}`,
-        sender: 'other',
+        sender: isMyOwnFromAnotherTab ? 'self' : 'other',
         text: incoming.text,
         time: incoming.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        status: isCurrentlyViewingThisChat ? 'read' : 'delivered',
         type: incoming.type || 'text',
         mediaUrl: incoming.mediaUrl,
         audioUrl: incoming.audioUrl,
@@ -236,7 +250,7 @@ export default function ChatPage() {
                 ...c,
                 lastMessage: incoming.text,
                 time: incoming.time || 'Baru saja',
-                unread: selectedChat === c.id ? 0 : (c.unread || 0) + 1,
+                unread: isCurrentlyViewingThisChat ? 0 : (c.unread || 0) + 1,
               }
             }
             return c
@@ -250,20 +264,112 @@ export default function ChatPage() {
               time: incoming.time || 'Baru saja',
               online: true,
               streak: 1,
-              unread: selectedChat === convoId ? 0 : 1,
+              unread: isCurrentlyViewingThisChat ? 0 : 1,
             },
             ...prev,
           ]
         }
       })
 
-      soundService.playMessageReceive()
+      // Sound notification and ACK receipt
+      if (!isMyOwnFromAnotherTab) {
+        soundService.playMessageReceive()
+
+        // Send Delivery or Read ACK receipt back to sender (Centang 2 / Centang 2 Biru)
+        realtimeSync.sendStatusReceipt({
+          messageId: incoming.id,
+          conversationId: convoId,
+          fromUserId: currentUserId,
+          toUserId: incoming.fromUserId,
+          status: isCurrentlyViewingThisChat ? 'read' : 'delivered',
+          senderTabId: CURRENT_TAB_ID,
+        })
+      }
     })
 
     return () => {
       unsubscribe()
     }
   }, [currentUserId, currentUsername, currentDisplayName, selectedChat])
+
+  // Listen for message status receipts (Centang 2 Delivered & Centang 2 Biru Read)
+  useEffect(() => {
+    const unsubStatus = realtimeSync.onMessageStatus((receipt) => {
+      if (receipt.senderTabId && receipt.senderTabId === CURRENT_TAB_ID) return
+
+      setMessages((prev) => {
+        let hasChanges = false
+        const updated = { ...prev }
+
+        for (const convoKey of Object.keys(updated)) {
+          const list = updated[convoKey]
+          const nextList = list.map((m) => {
+            if (m.sender === 'self') {
+              const matchesMsg =
+                (receipt.messageId && m.id === receipt.messageId) ||
+                (receipt.messageIds && receipt.messageIds.includes(m.id)) ||
+                (!receipt.messageId &&
+                  !receipt.messageIds &&
+                  (receipt.conversationId === convoKey || receipt.fromUserId === convoKey))
+
+              if (matchesMsg) {
+                // If already 'read', do not downgrade to 'delivered'
+                if (m.status === 'read' && receipt.status === 'delivered') return m
+                if (m.status !== receipt.status) {
+                  hasChanges = true
+                  return { ...m, status: receipt.status }
+                }
+              }
+            }
+            return m
+          })
+
+          if (hasChanges) {
+            updated[convoKey] = nextList
+          }
+        }
+
+        return hasChanges ? updated : prev
+      })
+    })
+
+    return () => {
+      unsubStatus()
+    }
+  }, [currentUserId])
+
+  // Mark incoming messages as read when opening a conversation & send Read Receipt
+  useEffect(() => {
+    if (!selectedChat) return
+
+    setMessages((prev) => {
+      const chatMsgs = prev[selectedChat] || []
+      const unreadList = chatMsgs.filter((m) => m.sender === 'other' && m.status !== 'read')
+      if (unreadList.length === 0) return prev
+
+      const unreadIds = unreadList.map((m) => m.id)
+
+      realtimeSync.sendStatusReceipt({
+        messageIds: unreadIds,
+        conversationId: selectedChat,
+        fromUserId: currentUserId,
+        toUserId: selectedChat,
+        status: 'read',
+        senderTabId: CURRENT_TAB_ID,
+      })
+
+      return {
+        ...prev,
+        [selectedChat]: chatMsgs.map((m) =>
+          m.sender === 'other' ? { ...m, status: 'read' } : m
+        ),
+      }
+    })
+
+    setConversations((prev) =>
+      prev.map((c) => (c.id === selectedChat ? { ...c, unread: 0 } : c))
+    )
+  }, [selectedChat, currentUserId])
 
   // Sync to localStorage
   useEffect(() => {
@@ -533,11 +639,18 @@ export default function ChatPage() {
 
     soundService.playMessageSend()
 
+    const targetConvo = conversations.find((c) => c.id === chatToUse)
+    const targetName = targetConvo?.name || ''
+    const cleanTargetUser = targetName.startsWith('@')
+      ? targetName.replace('@', '').toLowerCase()
+      : chatToUse.replace('usr_', '').toLowerCase()
+
     const newMsg: ChatMessage = {
       id: `msg_${Date.now()}`,
       sender: 'self',
       text: messageContent || (msgType === 'voice' ? 'Voice note (0:08)' : 'Location shared'),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      status: 'sent',
       type: msgType,
       mediaUrl: attachedMediaUrl,
       isViewOnce: overrideViewOnce !== undefined ? overrideViewOnce : isViewOnceMode,
@@ -564,9 +677,13 @@ export default function ChatPage() {
       conversationId: chatToUse,
       fromUserId: currentUserId,
       fromUserName: currentDisplayName,
-      toUserId: chatToUse,
+      fromUsername: currentUsername,
+      toUserId: cleanTargetUser || chatToUse,
+      toUserName: targetName,
       text: newMsg.text,
       time: newMsg.time,
+      status: 'sent',
+      senderTabId: CURRENT_TAB_ID,
       type: msgType,
       mediaUrl: attachedMediaUrl,
       isViewOnce: newMsg.isViewOnce,
@@ -964,7 +1081,7 @@ export default function ChatPage() {
                         <p className="font-body text-body-md whitespace-pre-wrap break-words">{msg.text}</p>
                       )}
 
-                      <div className="flex items-center justify-end gap-2 mt-1">
+                      <div className="flex items-center justify-end gap-1.5 mt-1 select-none">
                         <span
                           className={`font-body text-[10px] ${
                             msg.sender === 'self' ? 'text-on-primary-container/70' : 'text-on-surface-variant'
@@ -972,6 +1089,42 @@ export default function ChatPage() {
                         >
                           {msg.time}
                         </span>
+
+                        {msg.sender === 'self' && (
+                          <span
+                            className="inline-flex items-center"
+                            title={
+                              msg.status === 'read'
+                                ? 'Sudah Dibaca (Centang 2 Biru)'
+                                : msg.status === 'delivered'
+                                ? 'Tersampaikan (Centang 2 Abu-abu)'
+                                : 'Terkirim (Centang 1 Abu-abu)'
+                            }
+                          >
+                            {msg.status === 'read' ? (
+                              <span
+                                className="material-symbols-outlined text-[16px] text-sky-400 font-bold transition-all drop-shadow-[0_0_8px_rgba(56,189,248,0.9)]"
+                                style={{ fontVariationSettings: "'wght' 700" }}
+                              >
+                                done_all
+                              </span>
+                            ) : msg.status === 'delivered' ? (
+                              <span
+                                className="material-symbols-outlined text-[16px] text-white/60 font-normal transition-all"
+                                style={{ fontVariationSettings: "'wght' 500" }}
+                              >
+                                done_all
+                              </span>
+                            ) : (
+                              <span
+                                className="material-symbols-outlined text-[15px] text-white/60 font-normal transition-all"
+                                style={{ fontVariationSettings: "'wght' 500" }}
+                              >
+                                check
+                              </span>
+                            )}
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -1447,18 +1600,32 @@ export default function ChatPage() {
                 e.preventDefault()
                 if (!newChatTargetName.trim()) return
                 const cleanName = newChatTargetName.trim()
-                const newId = `convo_${Date.now()}`
-                const newConvo: Conversation = {
-                  id: newId,
-                  name: cleanName,
-                  lastMessage: 'Obrolan dimulai',
-                  time: 'Now',
-                  online: true,
-                  streak: 1,
-                  unread: 0,
+                const targetUsername = cleanName.replace('@', '').toLowerCase()
+                const newId = `usr_${targetUsername}`
+
+                const existing = conversations.find(
+                  (c) =>
+                    c.id === newId ||
+                    c.name.toLowerCase() === cleanName.toLowerCase() ||
+                    c.name.toLowerCase() === `@${targetUsername}`
+                )
+
+                if (existing) {
+                  setSelectedChat(existing.id)
+                } else {
+                  const newConvo: Conversation = {
+                    id: newId,
+                    name: cleanName.startsWith('@') ? cleanName : `@${cleanName}`,
+                    lastMessage: 'Obrolan dimulai',
+                    time: 'Now',
+                    online: true,
+                    streak: 1,
+                    unread: 0,
+                  }
+                  setConversations((prev) => [newConvo, ...prev])
+                  setSelectedChat(newId)
                 }
-                setConversations((prev) => [newConvo, ...prev])
-                setSelectedChat(newId)
+
                 setIsNewChatModalOpen(false)
                 setNewChatTargetName('')
               }}

@@ -1,13 +1,29 @@
 import { supabase } from '@/lib/supabase'
 
+export const CURRENT_TAB_ID =
+  typeof window !== 'undefined'
+    ? (() => {
+        let tabId = sessionStorage.getItem('adld_client_tab_id')
+        if (!tabId) {
+          tabId = 'tab_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now()
+          sessionStorage.setItem('adld_client_tab_id', tabId)
+        }
+        return tabId
+      })()
+    : 'server_tab'
+
 export interface RealtimeChatMessage {
   id: string
   conversationId: string
   fromUserId: string
   fromUserName: string
+  fromUsername?: string
   toUserId: string
+  toUserName?: string
   text: string
   time: string
+  status?: 'sent' | 'delivered' | 'read'
+  senderTabId?: string
   type: 'text' | 'image' | 'voice' | 'location' | 'file' | 'invoice'
   mediaUrl?: string
   audioUrl?: string
@@ -15,6 +31,16 @@ export interface RealtimeChatMessage {
   isViewOnce?: boolean
   invoice?: any
   fileName?: string
+}
+
+export interface MessageStatusReceipt {
+  messageId?: string
+  messageIds?: string[]
+  conversationId: string
+  fromUserId: string
+  toUserId: string
+  status: 'delivered' | 'read'
+  senderTabId?: string
 }
 
 export interface FriendRequestPayload {
@@ -28,12 +54,14 @@ export interface FriendRequestPayload {
 }
 
 type MessageCallback = (msg: RealtimeChatMessage) => void
+type StatusCallback = (receipt: MessageStatusReceipt) => void
 type FriendCallback = (action: 'request' | 'accepted' | 'rejected', data: any) => void
 
 class RealtimeSyncManager {
   private broadcastChannel: BroadcastChannel | null = null
   private supabaseChannel: any = null
   private messageListeners: Set<MessageCallback> = new Set()
+  private statusListeners: Set<StatusCallback> = new Set()
   private friendListeners: Set<FriendCallback> = new Set()
 
   constructor() {
@@ -59,12 +87,19 @@ class RealtimeSyncManager {
   // 2. Supabase Realtime WebSocket (Online cross-device)
   private initSupabaseChannel() {
     try {
-      this.supabaseChannel = supabase.channel('adld_global_room')
+      this.supabaseChannel = supabase.channel('adld_global_room', {
+        config: { broadcast: { self: false } },
+      })
 
       this.supabaseChannel
         .on('broadcast', { event: 'chat_message' }, (payload: any) => {
           if (payload?.payload) {
             this.notifyMessageListeners(payload.payload)
+          }
+        })
+        .on('broadcast', { event: 'message_status' }, (payload: any) => {
+          if (payload?.payload) {
+            this.notifyStatusListeners(payload.payload)
           }
         })
         .on('broadcast', { event: 'friend_update' }, (payload: any) => {
@@ -97,6 +132,8 @@ class RealtimeSyncManager {
 
     if (eventData.type === 'chat_message' && eventData.payload) {
       this.notifyMessageListeners(eventData.payload)
+    } else if (eventData.type === 'message_status' && eventData.payload) {
+      this.notifyStatusListeners(eventData.payload)
     } else if (eventData.type === 'friend_update' && eventData.payload) {
       this.notifyFriendListeners(eventData.payload.action, eventData.payload.data)
     }
@@ -108,6 +145,16 @@ class RealtimeSyncManager {
         listener(msg)
       } catch (err) {
         console.error('Error in message listener:', err)
+      }
+    })
+  }
+
+  private notifyStatusListeners(receipt: MessageStatusReceipt) {
+    this.statusListeners.forEach((listener) => {
+      try {
+        listener(receipt)
+      } catch (err) {
+        console.error('Error in status listener:', err)
       }
     })
   }
@@ -130,6 +177,14 @@ class RealtimeSyncManager {
     }
   }
 
+  // Subscribe to message status changes (Delivered, Read)
+  public onMessageStatus(callback: StatusCallback) {
+    this.statusListeners.add(callback)
+    return () => {
+      this.statusListeners.delete(callback)
+    }
+  }
+
   // Subscribe to friend updates
   public onFriendUpdate(callback: FriendCallback) {
     this.friendListeners.add(callback)
@@ -140,12 +195,18 @@ class RealtimeSyncManager {
 
   // Send a real-time message
   public async sendChatMessage(msg: RealtimeChatMessage) {
+    const payloadWithTab: RealtimeChatMessage = {
+      ...msg,
+      senderTabId: msg.senderTabId || CURRENT_TAB_ID,
+      status: msg.status || 'sent',
+    }
+
     // 1. Dispatch via BroadcastChannel
     if (this.broadcastChannel) {
       try {
         this.broadcastChannel.postMessage({
           type: 'chat_message',
-          payload: msg,
+          payload: payloadWithTab,
         })
       } catch {}
     }
@@ -154,7 +215,7 @@ class RealtimeSyncManager {
     try {
       localStorage.setItem(
         'adld_incoming_realtime_event',
-        JSON.stringify({ type: 'chat_message', payload: msg, _t: Date.now() })
+        JSON.stringify({ type: 'chat_message', payload: payloadWithTab, _t: Date.now() })
       )
     } catch {}
 
@@ -164,7 +225,7 @@ class RealtimeSyncManager {
         this.supabaseChannel.send({
           type: 'broadcast',
           event: 'chat_message',
-          payload: msg,
+          payload: payloadWithTab,
         })
       } catch (err) {
         console.warn('Supabase realtime broadcast error:', err)
@@ -172,7 +233,46 @@ class RealtimeSyncManager {
     }
 
     // 4. Save into recipient's conversation box in persistent storage
-    this.persistMessageForRecipient(msg)
+    this.persistMessageForRecipient(payloadWithTab)
+  }
+
+  // Send message delivery or read receipt (Centang 2 & Centang 2 Biru)
+  public async sendStatusReceipt(receipt: MessageStatusReceipt) {
+    const payloadWithTab: MessageStatusReceipt = {
+      ...receipt,
+      senderTabId: receipt.senderTabId || CURRENT_TAB_ID,
+    }
+
+    // 1. BroadcastChannel
+    if (this.broadcastChannel) {
+      try {
+        this.broadcastChannel.postMessage({
+          type: 'message_status',
+          payload: payloadWithTab,
+        })
+      } catch {}
+    }
+
+    // 2. Storage event fallback
+    try {
+      localStorage.setItem(
+        'adld_incoming_realtime_event',
+        JSON.stringify({ type: 'message_status', payload: payloadWithTab, _t: Date.now() })
+      )
+    } catch {}
+
+    // 3. Supabase Realtime WebSocket
+    if (this.supabaseChannel) {
+      try {
+        this.supabaseChannel.send({
+          type: 'broadcast',
+          event: 'message_status',
+          payload: payloadWithTab,
+        })
+      } catch (err) {
+        console.warn('Supabase realtime broadcast status error:', err)
+      }
+    }
   }
 
   // Persist into recipient's messages
