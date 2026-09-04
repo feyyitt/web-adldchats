@@ -177,6 +177,33 @@ body {
   animation: adldmapFloat 3s ease-in-out infinite;
 }
 
+@keyframes radarPulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.animate-radar-pulse {
+  animation: radarPulse 2.4s cubic-bezier(0.1, 0.7, 0.1, 1) infinite;
+}
+
+.leaflet-route-glow {
+  stroke-dasharray: 8, 8;
+  animation: routeDash 1.2s linear infinite;
+  filter: drop-shadow(0 0 6px #10b981) drop-shadow(0 0 14px #059669);
+}
+
+@keyframes routeDash {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
 @keyframes fadeUpIn {
   from {
     opacity: 0;
