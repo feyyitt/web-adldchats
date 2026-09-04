@@ -2,6 +2,33 @@ import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { UserProfile } from '@/stores/authStore'
 
+export interface LocalAccount {
+  id: string
+  email: string
+  username: string
+  displayName: string
+  password: string
+  avatarUrl: string
+  createdAt: string
+}
+
+function getLocalAccounts(): LocalAccount[] {
+  try {
+    const saved = localStorage.getItem('adld_registered_accounts')
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed)) return parsed
+    }
+  } catch {}
+  return []
+}
+
+function saveLocalAccounts(accounts: LocalAccount[]) {
+  try {
+    localStorage.setItem('adld_registered_accounts', JSON.stringify(accounts))
+  } catch {}
+}
+
 function createMockUser(id: string, email: string, username: string, displayName: string): User {
   return {
     id,
@@ -21,8 +48,31 @@ export const authService = {
    */
   async register(username: string, displayName: string, password: string) {
     const cleanUsername = username.toLowerCase().trim()
-    const email = `${cleanUsername}@adldchats.app`
+    const cleanDisplayName = displayName.trim() || cleanUsername
 
+    // 1. Validation
+    if (!/^[a-zA-Z0-9_]{3,25}$/.test(cleanUsername)) {
+      throw new Error('Nama pengguna harus 3-25 karakter dan hanya boleh berisi huruf, angka, atau garis bawah (_).')
+    }
+
+    if (password.length < 6) {
+      throw new Error('Kata sandi minimal harus 6 karakter.')
+    }
+
+    // 2. Check if username already exists locally
+    const existingAccounts = getLocalAccounts()
+    if (
+      cleanUsername === 'faith' ||
+      existingAccounts.some((acc) => acc.username.toLowerCase() === cleanUsername)
+    ) {
+      throw new Error(`Nama pengguna @${cleanUsername} sudah digunakan. Silakan pilih nama pengguna lain.`)
+    }
+
+    const email = `${cleanUsername}@adldchats.app`
+    let userId = `usr_${cleanUsername}_${Date.now()}`
+    let supabaseUser: User | null = null
+
+    // 3. Attempt Supabase Auth Registration
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -30,24 +80,54 @@ export const authService = {
         options: {
           data: {
             username: cleanUsername,
-            display_name: displayName.trim(),
+            display_name: cleanDisplayName,
           },
         },
       })
 
-      if (!error && data?.user) return { user: data.user }
+      if (!error && data?.user) {
+        supabaseUser = data.user
+        userId = data.user.id
+
+        // Insert into public.profiles table in Supabase
+        try {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            username: cleanUsername,
+            display_name: cleanDisplayName,
+            avatar_url: '/avatars/male_1_clean.png',
+            bio: 'Member baru ADLD Chats 🚀',
+            is_online: true,
+            last_seen: new Date().toISOString(),
+            ghost_mode: false,
+            location_sharing_enabled: true,
+            language: 'id',
+            updated_at: new Date().toISOString(),
+          })
+        } catch (profErr) {
+          console.warn('[ADLD Auth] Supabase profile upsert warning:', profErr)
+        }
+      }
     } catch {
-      console.warn('[ADLD Auth] Supabase register fallback to local demo mode')
+      console.warn('[ADLD Auth] Supabase signup fallback to local account storage')
     }
 
-    // Local Demo Register Fallback
+    // 4. Save to local accounts registry for offline & instant persistence
+    const newAccount: LocalAccount = {
+      id: userId,
+      email,
+      username: cleanUsername,
+      displayName: cleanDisplayName,
+      password,
+      avatarUrl: '/avatars/male_1_clean.png',
+      createdAt: new Date().toISOString(),
+    }
+
+    existingAccounts.push(newAccount)
+    saveLocalAccounts(existingAccounts)
+
     return {
-      user: createMockUser(
-        `usr_${cleanUsername}_${Date.now()}`,
-        email,
-        cleanUsername,
-        displayName.trim()
-      ),
+      user: supabaseUser || createMockUser(userId, email, cleanUsername, cleanDisplayName),
     }
   },
 
@@ -58,42 +138,47 @@ export const authService = {
     const cleanUsername = username.toLowerCase().trim()
     const email = `${cleanUsername}@adldchats.app`
 
+    // 1. Try Supabase Auth Login first
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (!error && data?.user) return { user: data.user }
+      if (!error && data?.user) {
+        return { user: data.user }
+      }
     } catch {
-      console.warn('[ADLD Auth] Supabase login fallback to local demo auth')
+      console.warn('[ADLD Auth] Supabase login fallback to local check')
     }
 
-    // Check if custom password was saved
-    const savedCustomPass = localStorage.getItem('adld-user-password')
-    if (savedCustomPass && password === savedCustomPass) {
-      const capName = cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1)
-      return {
-        user: createMockUser(`usr_${cleanUsername}_custom`, email, cleanUsername, capName),
+    // 2. Check Admin account (faith)
+    if (cleanUsername === 'faith') {
+      const savedAdminPass = localStorage.getItem('adld-user-password') || 'faith123'
+      if (password === savedAdminPass) {
+        return {
+          user: createMockUser('usr_faith_001', 'faith@adldchats.app', 'faith', 'Faith'),
+        }
+      } else {
+        throw new Error('Kata sandi untuk akun @faith salah. Silakan periksa kembali.')
       }
     }
 
-    // Direct match for requested temporary account: faith / faith123
-    if (cleanUsername === 'faith' && password === 'faith123') {
-      return {
-        user: createMockUser('usr_faith_001', 'faith@adldchats.app', 'faith', 'Faith'),
+    // 3. Check Local Registered Accounts
+    const localAccounts = getLocalAccounts()
+    const found = localAccounts.find((acc) => acc.username.toLowerCase() === cleanUsername)
+
+    if (found) {
+      if (found.password === password) {
+        return {
+          user: createMockUser(found.id, found.email, found.username, found.displayName),
+        }
+      } else {
+        throw new Error('Kata sandi yang Anda masukkan salah. Silakan coba lagi.')
       }
     }
 
-    // Allow login for any registered username with valid password
-    if (password.length >= 4) {
-      const capName = cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1)
-      return {
-        user: createMockUser(`usr_${cleanUsername}_demo`, email, cleanUsername, capName),
-      }
-    }
-
-    throw new Error('Username atau Password salah. Silakan periksa kembali.')
+    throw new Error(`Akun @${cleanUsername} belum terdaftar. Silakan buat akun baru terlebih dahulu.`)
   },
 
   /**
@@ -105,16 +190,31 @@ export const authService = {
     }
 
     try {
-      const { data, error } = await supabase.auth.updateUser({
+      await supabase.auth.updateUser({
         password: newPassword,
       })
-      if (!error && data?.user) {
-        localStorage.setItem('adld-user-password', newPassword)
-        return { success: true }
+    } catch {}
+
+    // Update in local accounts registry as well
+    localStorage.setItem('adld-user-password', newPassword)
+
+    try {
+      const savedUserStr = localStorage.getItem('adld_auth_user')
+      if (savedUserStr) {
+        const currentUser = JSON.parse(savedUserStr)
+        const currentUsername = currentUser?.user_metadata?.username || currentUser?.email?.split('@')[0]
+        if (currentUsername) {
+          const accounts = getLocalAccounts()
+          const updatedAccounts = accounts.map((acc) =>
+            acc.username.toLowerCase() === currentUsername.toLowerCase()
+              ? { ...acc, password: newPassword }
+              : acc
+          )
+          saveLocalAccounts(updatedAccounts)
+        }
       }
     } catch {}
 
-    localStorage.setItem('adld-user-password', newPassword)
     return { success: true }
   },
 
@@ -141,12 +241,31 @@ export const authService = {
       if (!error && data) return data as UserProfile
     } catch {}
 
-    // Fallback profile generator for demo account
+    // Check local accounts
+    const accounts = getLocalAccounts()
+    const found = accounts.find((acc) => acc.id === userId || acc.username === userId)
+    if (found) {
+      return {
+        id: found.id,
+        username: found.username,
+        display_name: found.displayName,
+        avatar_url: found.avatarUrl || '/avatars/male_1_clean.png',
+        bio: 'Member terdaftar ADLD Chats 🚀',
+        is_online: true,
+        last_seen: new Date().toISOString(),
+        ghost_mode: false,
+        location_sharing_enabled: true,
+        language: 'id',
+        created_at: found.createdAt,
+        updated_at: found.createdAt,
+      }
+    }
+
     const isFaith = userId.includes('faith')
     return {
       id: userId,
-      username: isFaith ? 'faith' : 'demo_user',
-      display_name: isFaith ? 'Faith' : 'Demo User',
+      username: isFaith ? 'faith' : 'pengguna',
+      display_name: isFaith ? 'Faith' : 'Pengguna ADLD',
       avatar_url: '/avatars/male_1_clean.png',
       bio: 'Digital explorer | Neon nights | Always online 🌌',
       is_online: true,
@@ -176,6 +295,20 @@ export const authService = {
 
       if (!error && data) return data as UserProfile
     } catch {}
+
+    // Also update in local accounts
+    const accounts = getLocalAccounts()
+    const updatedAccounts = accounts.map((acc) =>
+      acc.id === userId || acc.username === userId
+        ? {
+            ...acc,
+            displayName: updates.display_name || acc.displayName,
+            username: updates.username || acc.username,
+            avatarUrl: updates.avatar_url || acc.avatarUrl,
+          }
+        : acc
+    )
+    saveLocalAccounts(updatedAccounts)
 
     return {
       id: userId,
