@@ -4,6 +4,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import OrderInvoiceModal from '@/components/catalog/OrderInvoiceModal'
 import type { InvoiceData } from '@/components/catalog/OrderInvoiceModal'
 import { soundService } from '@/services/soundService'
+import VoiceNotePlayer from '@/components/chat/VoiceNotePlayer'
 
 interface ChatMessage {
   id: string
@@ -18,6 +19,8 @@ interface ChatMessage {
   replyToText?: string
   invoice?: InvoiceData
   fileName?: string
+  audioUrl?: string
+  audioDuration?: number
 }
 
 interface Conversation {
@@ -188,7 +191,130 @@ export default function ChatPage() {
 
   // View once modal
   const [activeViewOnceMsg, setActiveViewOnceMsg] = useState<ChatMessage | null>(null)
+
+  // Real Audio Recorder State
   const [isRecordingAudio, setIsRecordingAudio] = useState(false)
+  const [recordingDuration, setRecordingDuration] = useState(0)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const recordingTimerRef = useRef<any>(null)
+  const audioStreamRef = useRef<MediaStream | null>(null)
+
+  // Cleanup media recording when component unmounts
+  useEffect(() => {
+    return () => {
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current)
+      if (audioStreamRef.current) {
+        audioStreamRef.current.getTracks().forEach((track) => track.stop())
+      }
+    }
+  }, [])
+
+  const handleStartAudioRecording = async () => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Browser Anda tidak mendukung perekaman suara.')
+        return
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      audioStreamRef.current = stream
+      audioChunksRef.current = []
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/mp4')
+        ? 'audio/mp4'
+        : 'audio/webm'
+
+      const recorder = new MediaRecorder(stream, { mimeType })
+      mediaRecorderRef.current = recorder
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data)
+        }
+      }
+
+      recorder.start(100)
+      setIsRecordingAudio(true)
+      setRecordingDuration(0)
+
+      soundService.playMessageSend()
+
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current)
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1)
+      }, 1000)
+    } catch (err) {
+      console.error('Failed to start microphone recording:', err)
+      alert('Izin akses mikrofon ditolak atau tidak tersedia. Pastikan izin mic diaktifkan di browser Anda.')
+      setIsRecordingAudio(false)
+    }
+  }
+
+  const handleStopAudioRecording = (shouldSend: boolean) => {
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current)
+      recordingTimerRef.current = null
+    }
+
+    const recorder = mediaRecorderRef.current
+    if (recorder && recorder.state !== 'inactive') {
+      recorder.onstop = () => {
+        if (audioStreamRef.current) {
+          audioStreamRef.current.getTracks().forEach((track) => track.stop())
+          audioStreamRef.current = null
+        }
+
+        if (shouldSend && audioChunksRef.current.length > 0 && selectedChat) {
+          const mimeType = recorder.mimeType || 'audio/webm'
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType })
+          const duration = Math.max(1, recordingDuration)
+
+          const reader = new FileReader()
+          reader.readAsDataURL(audioBlob)
+          reader.onloadend = () => {
+            const base64Audio = reader.result as string
+            soundService.playMessageSend()
+
+            const newMsg: ChatMessage = {
+              id: `msg_voice_${Date.now()}`,
+              sender: 'self',
+              text: `🎤 Pesan Suara (${Math.floor(duration / 60)}:${(duration % 60) < 10 ? '0' : ''}${duration % 60})`,
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              type: 'voice',
+              audioUrl: base64Audio,
+              audioDuration: duration,
+            }
+
+            setMessages((prev) => ({
+              ...prev,
+              [selectedChat]: [...(prev[selectedChat] || []), newMsg],
+            }))
+
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === selectedChat
+                  ? { ...c, lastMessage: newMsg.text, time: 'Now' }
+                  : c
+              )
+            )
+          }
+        }
+      }
+
+      recorder.stop()
+    } else {
+      if (audioStreamRef.current) {
+        audioStreamRef.current.getTracks().forEach((track) => track.stop())
+        audioStreamRef.current = null
+      }
+    }
+
+    setIsRecordingAudio(false)
+    setRecordingDuration(0)
+  }
 
   const selectedConvo = conversations.find((c) => c.id === selectedChat)
   const currentMessages = selectedChat ? messages[selectedChat] || [] : []
@@ -608,13 +734,11 @@ export default function ChatPage() {
                           </button>
                         </div>
                       ) : msg.type === 'voice' ? (
-                        <div className="flex items-center gap-3 min-w-[160px]">
-                          <span className="material-symbols-outlined text-primary-fixed text-[24px]">play_circle</span>
-                          <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                            <div className="w-1/3 h-full bg-primary-fixed" />
-                          </div>
-                          <span className="text-xs font-mono">0:08</span>
-                        </div>
+                        <VoiceNotePlayer
+                          audioUrl={msg.audioUrl}
+                          duration={msg.audioDuration || 8}
+                          isSelf={msg.sender === 'self'}
+                        />
                       ) : (
                         <p className="font-body text-body-md whitespace-pre-wrap break-words">{msg.text}</p>
                       )}
@@ -731,76 +855,111 @@ export default function ChatPage() {
 
             {/* Message Composer Bar */}
             <div className="px-4 md:px-6 py-3 border-t border-white/10 bg-surface-container-lowest/80 backdrop-blur-md">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  handleSendMessage()
-                }}
-                className="flex items-center gap-2.5"
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsAttachmentOpen(!isAttachmentOpen)}
-                  className={`transition-colors ${
-                    isAttachmentOpen ? 'text-primary-fixed' : 'text-on-surface-variant hover:text-primary-fixed'
-                  }`}
-                >
-                  <span className="material-symbols-outlined">add_circle</span>
-                </button>
-
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    placeholder={t('chat.messagePlaceholder')}
-                    className="w-full bg-surface-container-highest border border-white/10 text-on-surface font-body text-body-md rounded-full px-4 py-2.5 focus:outline-none input-glow transition-all placeholder:text-on-surface-variant/50"
-                  />
-                </div>
-
-                {inputMessage.trim() ? (
-                  <button
-                    type="submit"
-                    className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center hover:brightness-110 transition-all active:scale-95 neon-glow-primary flex-shrink-0"
-                  >
-                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      send
+              {isRecordingAudio ? (
+                /* LIVE AUDIO RECORDING BAR */
+                <div className="flex items-center justify-between gap-3 px-3 py-1.5 bg-zinc-900/90 rounded-2xl border border-red-500/30 shadow-xl animate-fade-up-in">
+                  {/* Left: Pulsing Red Recording Indicator & Duration */}
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-red-500 animate-ping flex-shrink-0" />
+                    <span className="text-xs font-mono font-bold text-red-400">
+                      {Math.floor(recordingDuration / 60)}:{(recordingDuration % 60) < 10 ? '0' : ''}{recordingDuration % 60}
                     </span>
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                  </div>
+
+                  {/* Center: Live Bouncing Audio Waveform Equalizer */}
+                  <div className="flex-1 flex items-center justify-center gap-1 h-6 overflow-hidden px-2">
+                    {[8, 16, 22, 12, 26, 18, 10, 24, 14, 20, 16, 28, 12, 20, 14, 8].map((h, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          animationDelay: `${(i % 5) * 0.15}s`,
+                          height: `${h}px`,
+                        }}
+                        className="w-[3px] bg-red-500 rounded-full animate-voice-wave"
+                      />
+                    ))}
+                  </div>
+
+                  {/* Right: Cancel & Send Buttons */}
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => handleOpenQuickCamera(selectedConvo.id, selectedConvo.name)}
-                      className="w-10 h-10 rounded-full glass-panel text-on-surface hover:text-primary-fixed flex items-center justify-center transition-all"
-                      title="Take Photo Snap"
+                      onClick={() => handleStopAudioRecording(false)}
+                      className="p-2 rounded-full hover:bg-white/10 text-zinc-400 hover:text-red-400 transition-colors"
+                      title="Batal Rekam"
                     >
-                      <span className="material-symbols-outlined text-[20px]">photo_camera</span>
+                      <span className="material-symbols-outlined text-[20px]">delete</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (isRecordingAudio) {
-                          setIsRecordingAudio(false)
-                          handleSendMessage('🎤 Voice note (0:08)', 'voice')
-                        } else {
-                          setIsRecordingAudio(true)
-                        }
-                      }}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                        isRecordingAudio
-                          ? 'bg-secondary-container text-on-secondary-container animate-ping'
-                          : 'glass-panel text-on-surface hover:text-primary-fixed'
-                      }`}
-                      title="Record Voice Note"
+                      onClick={() => handleStopAudioRecording(true)}
+                      className="w-9 h-9 rounded-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 flex items-center justify-center font-bold shadow-lg shadow-emerald-500/40 active:scale-95 transition-all"
+                      title="Kirim Pesan Suara"
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        {isRecordingAudio ? 'graphic_eq' : 'mic'}
-                      </span>
+                      <span className="material-symbols-outlined text-[20px]">send</span>
                     </button>
                   </div>
-                )}
-              </form>
+                </div>
+              ) : (
+                /* STANDARD MESSAGE COMPOSER */
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    handleSendMessage()
+                  }}
+                  className="flex items-center gap-2.5"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setIsAttachmentOpen(!isAttachmentOpen)}
+                    className={`transition-colors ${
+                      isAttachmentOpen ? 'text-primary-fixed' : 'text-on-surface-variant hover:text-primary-fixed'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined">add_circle</span>
+                  </button>
+
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      placeholder={t('chat.messagePlaceholder')}
+                      className="w-full bg-surface-container-highest border border-white/10 text-on-surface font-body text-body-md rounded-full px-4 py-2.5 focus:outline-none input-glow transition-all placeholder:text-on-surface-variant/50"
+                    />
+                  </div>
+
+                  {inputMessage.trim() ? (
+                    <button
+                      type="submit"
+                      className="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center hover:brightness-110 transition-all active:scale-95 neon-glow-primary flex-shrink-0"
+                    >
+                      <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                        send
+                      </span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenQuickCamera(selectedConvo.id, selectedConvo.name)}
+                        className="w-10 h-10 rounded-full glass-panel text-on-surface hover:text-primary-fixed flex items-center justify-center transition-all"
+                        title="Take Photo Snap"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">photo_camera</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleStartAudioRecording}
+                        className="w-10 h-10 rounded-full glass-panel text-on-surface hover:text-emerald-400 flex items-center justify-center transition-all active:scale-95"
+                        title="Rekam Pesan Suara"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">mic</span>
+                      </button>
+                    </div>
+                  )}
+                </form>
+              )}
             </div>
           </>
         ) : (

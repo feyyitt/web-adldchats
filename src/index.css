@@ -204,6 +204,21 @@ body {
   }
 }
 
+@keyframes voiceWave {
+  0%, 100% {
+    height: 6px;
+    transform: scaleY(0.4);
+  }
+  50% {
+    height: 24px;
+    transform: scaleY(1);
+  }
+}
+
+.animate-voice-wave {
+  animation: voiceWave 0.8s ease-in-out infinite;
+}
+
 @keyframes fadeUpIn {
   from {
     opacity: 0;
