@@ -97,15 +97,27 @@ export default function SocialMapPage() {
       attributionControl: false,
     })
 
-    const tileUrl =
-      theme === 'light'
-        ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-
-    L.tileLayer(tileUrl, {
-      subdomains: 'abcd',
-      maxZoom: 19,
-    }).addTo(map)
+    if (theme === 'light') {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        subdomains: 'abc',
+        maxZoom: 19,
+      }).addTo(map)
+    } else {
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 19,
+          maxNativeZoom: 16,
+        }
+      ).addTo(map)
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 19,
+          maxNativeZoom: 16,
+        }
+      ).addTo(map)
+    }
 
     mapInstanceRef.current = map
 
