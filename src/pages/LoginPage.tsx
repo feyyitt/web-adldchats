@@ -18,6 +18,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false)
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false)
+  const [forgotUsername, setForgotUsername] = useState('')
+  const [forgotStatus, setForgotStatus] = useState<string | null>(null)
 
   // Welcome Login Animation State
   const [isLoggingInAnim, setIsLoggingInAnim] = useState(false)
@@ -110,12 +113,16 @@ export default function LoginPage() {
                 <label className="font-body text-label-md text-on-surface font-semibold">
                   Kata Sandi
                 </label>
-                <Link
-                  to="/forgot-password"
-                  className="font-body text-label-sm text-emerald-400 hover:underline transition-colors"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPasswordOpen(true)
+                    setForgotStatus(null)
+                  }}
+                  className="font-body text-label-sm text-emerald-400 hover:underline transition-colors cursor-pointer"
                 >
                   Lupa kata sandi?
-                </Link>
+                </button>
               </div>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
@@ -190,6 +197,105 @@ export default function LoginPage() {
         isOpen={isGuestModalOpen}
         onClose={() => setIsGuestModalOpen(false)}
       />
+
+      {/* Forgot Password Modal */}
+      <AnimatePresence>
+        {isForgotPasswordOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 select-none"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="glass-panel modal-card rounded-3xl p-6 sm:p-7 space-y-4 border border-white/15 shadow-2xl max-w-md w-full"
+            >
+              <div className="flex justify-between items-center border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[22px]">lock_reset</span>
+                  </div>
+                  <div>
+                    <h3 className="font-display text-base font-bold text-white">Lupa Kata Sandi?</h3>
+                    <p className="font-body text-xs text-zinc-400">Pemulihan akses akun ADLD Chats</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsForgotPasswordOpen(false)}
+                  className="text-zinc-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              {forgotStatus ? (
+                <div className="space-y-4 py-2">
+                  <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs leading-relaxed">
+                    {forgotStatus}
+                  </div>
+                  <button
+                    onClick={() => setIsForgotPasswordOpen(false)}
+                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold rounded-2xl transition-all shadow-lg active:scale-95"
+                  >
+                    Kembali ke Login
+                  </button>
+                </div>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (!forgotUsername.trim()) return
+                    setForgotStatus(
+                      `Permintaan reset kata sandi untuk akun "@${forgotUsername.trim()}" telah dicatat. Silakan hubungi Administrator (@faith) atau admin server untuk verifikasi instan.`
+                    )
+                  }}
+                  className="space-y-4 py-1"
+                >
+                  <p className="font-body text-xs text-zinc-300 leading-relaxed">
+                    Masukkan nama pengguna (username) Anda yang terdaftar untuk mengajukan reset kata sandi:
+                  </p>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-zinc-300 mb-1.5">Nama Pengguna</label>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-[18px]">
+                        person
+                      </span>
+                      <input
+                        type="text"
+                        value={forgotUsername}
+                        onChange={(e) => setForgotUsername(e.target.value)}
+                        placeholder="Contoh: faith atau user_anda"
+                        className="w-full bg-zinc-900/90 border border-white/10 text-white text-xs rounded-2xl pl-10 pr-4 py-3 focus:outline-none focus:border-emerald-500 transition-all placeholder:text-zinc-600"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2.5 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPasswordOpen(false)}
+                      className="flex-1 py-3 glass-panel text-zinc-400 hover:text-white font-display text-xs font-bold rounded-2xl transition-all hover:bg-white/10"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-display text-xs font-bold rounded-2xl transition-all shadow-lg active:scale-95"
+                    >
+                      Kirim Permintaan
+                    </button>
+                  </div>
+                </form>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Full-Screen Welcome Login Transition Overlay */}
       <AnimatePresence>
