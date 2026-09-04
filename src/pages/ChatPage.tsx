@@ -5,6 +5,8 @@ import OrderInvoiceModal from '@/components/catalog/OrderInvoiceModal'
 import type { InvoiceData } from '@/components/catalog/OrderInvoiceModal'
 import { soundService } from '@/services/soundService'
 import VoiceNotePlayer from '@/components/chat/VoiceNotePlayer'
+import { realtimeSync, type RealtimeChatMessage } from '@/services/realtimeSync'
+import { useAuthStore } from '@/stores/authStore'
 
 interface ChatMessage {
   id: string
@@ -43,7 +45,19 @@ export default function ChatPage() {
   const location = useLocation()
   const { id: routeChatId } = useParams<{ id?: string }>()
 
+  const { user, profile } = useAuthStore()
+  const currentUsername = (profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'faith').toLowerCase()
+  const currentDisplayName = profile?.display_name || user?.user_metadata?.full_name || 'Faith'
+  const currentUserId = profile?.id || user?.id || `usr_${currentUsername}`
+
+  const [friendsList, setFriendsList] = useState<any[]>([])
+
   const [conversations, setConversations] = useState<Conversation[]>(() => {
+    try {
+      const userConvosKey = `adld_conversations_${currentUsername}`
+      const scoped = localStorage.getItem(userConvosKey)
+      if (scoped) return JSON.parse(scoped)
+    } catch {}
     const saved = localStorage.getItem('adld_conversations')
     if (saved) {
       try {
@@ -66,6 +80,11 @@ export default function ChatPage() {
   })
 
   const [messages, setMessages] = useState<Record<string, ChatMessage[]>>(() => {
+    try {
+      const userMsgKey = `adld_messages_${currentUsername}`
+      const scoped = localStorage.getItem(userMsgKey)
+      if (scoped) return JSON.parse(scoped)
+    } catch {}
     const saved = localStorage.getItem('adld_messages')
     if (saved) {
       try {
@@ -83,6 +102,45 @@ export default function ChatPage() {
   const [isViewOnceMode, setIsViewOnceMode] = useState(false)
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
   const [newChatTargetName, setNewChatTargetName] = useState('')
+
+  // Auto-sync accepted friends into conversation list
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`adld_friends_${currentUsername}`)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          setFriendsList(parsed)
+          setConversations((prev) => {
+            let updated = [...prev]
+            let changed = false
+            for (const fr of parsed) {
+              const cleanFrUser = fr.username ? fr.username.replace('@', '').toLowerCase() : ''
+              const frId = fr.id || (cleanFrUser ? `usr_${cleanFrUser}` : '')
+              if (!frId) continue
+
+              const exists = updated.some(
+                (c) => c.id === frId || (cleanFrUser && c.id === `usr_${cleanFrUser}`) || c.name === fr.name
+              )
+              if (!exists) {
+                changed = true
+                updated.push({
+                  id: frId,
+                  name: fr.name || `@${cleanFrUser}`,
+                  lastMessage: 'Ketuk untuk mulai mengobrol 👋',
+                  time: 'Online',
+                  online: fr.status === 'Online',
+                  streak: fr.streak || 1,
+                  unread: 0,
+                })
+              }
+            }
+            return changed ? updated : prev
+          })
+        }
+      }
+    } catch {}
+  }, [currentUsername])
 
   // Handle route param or state friend target navigation
   useEffect(() => {
@@ -116,14 +174,107 @@ export default function ChatPage() {
     }
   }, [routeChatId, location.state])
 
+  // Realtime Incoming Message Subscription (Supabase Realtime + BroadcastChannel + LocalStorage)
+  useEffect(() => {
+    const unsubscribe = realtimeSync.onMessage((incoming) => {
+      // Ignore if sent by myself
+      if (
+        incoming.fromUserId === currentUserId ||
+        (incoming.fromUserName && incoming.fromUserName.toLowerCase() === currentDisplayName.toLowerCase())
+      ) {
+        return
+      }
+
+      // Check if addressed to me or a public conversation
+      const cleanTo = (incoming.toUserId || '').replace('@', '').replace('usr_', '').toLowerCase()
+      const cleanMe = currentUsername.replace('@', '').replace('usr_', '').toLowerCase()
+      const isTargetedToMe =
+        !incoming.toUserId ||
+        cleanTo === cleanMe ||
+        incoming.toUserId === currentUserId ||
+        incoming.conversationId === currentUserId ||
+        incoming.conversationId === `usr_${cleanMe}`
+
+      if (!isTargetedToMe) {
+        return
+      }
+
+      const convoId = incoming.fromUserId || `usr_${incoming.fromUserName.toLowerCase()}`
+
+      const incomingMsg: ChatMessage = {
+        id: incoming.id || `msg_${Date.now()}`,
+        sender: 'other',
+        text: incoming.text,
+        time: incoming.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: incoming.type || 'text',
+        mediaUrl: incoming.mediaUrl,
+        audioUrl: incoming.audioUrl,
+        audioDuration: incoming.audioDuration,
+        isViewOnce: incoming.isViewOnce,
+        viewed: false,
+        invoice: incoming.invoice,
+        fileName: incoming.fileName,
+      }
+
+      setMessages((prev) => {
+        const existing = prev[convoId] || []
+        if (existing.some((m) => m.id === incomingMsg.id)) return prev
+        return {
+          ...prev,
+          [convoId]: [...existing, incomingMsg],
+        }
+      })
+
+      setConversations((prev) => {
+        const exists = prev.some(
+          (c) => c.id === convoId || c.name.toLowerCase() === incoming.fromUserName.toLowerCase()
+        )
+        if (exists) {
+          return prev.map((c) => {
+            if (c.id === convoId || c.name.toLowerCase() === incoming.fromUserName.toLowerCase()) {
+              return {
+                ...c,
+                lastMessage: incoming.text,
+                time: incoming.time || 'Baru saja',
+                unread: selectedChat === c.id ? 0 : (c.unread || 0) + 1,
+              }
+            }
+            return c
+          })
+        } else {
+          return [
+            {
+              id: convoId,
+              name: incoming.fromUserName || 'Teman ADLD',
+              lastMessage: incoming.text,
+              time: incoming.time || 'Baru saja',
+              online: true,
+              streak: 1,
+              unread: selectedChat === convoId ? 0 : 1,
+            },
+            ...prev,
+          ]
+        }
+      })
+
+      soundService.playMessageReceive()
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [currentUserId, currentUsername, currentDisplayName, selectedChat])
+
   // Sync to localStorage
   useEffect(() => {
+    localStorage.setItem(`adld_conversations_${currentUsername}`, JSON.stringify(conversations))
     localStorage.setItem('adld_conversations', JSON.stringify(conversations))
-  }, [conversations])
+  }, [conversations, currentUsername])
 
   useEffect(() => {
+    localStorage.setItem(`adld_messages_${currentUsername}`, JSON.stringify(messages))
     localStorage.setItem('adld_messages', JSON.stringify(messages))
-  }, [messages])
+  }, [messages, currentUsername])
 
   // Invoice & Rich Media States
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false)
@@ -300,6 +451,20 @@ export default function ChatPage() {
                   : c
               )
             )
+
+            // Broadcast real-time voice note
+            realtimeSync.sendChatMessage({
+              id: newMsg.id,
+              conversationId: selectedChat,
+              fromUserId: currentUserId,
+              fromUserName: currentDisplayName,
+              toUserId: selectedChat,
+              text: newMsg.text,
+              time: newMsg.time,
+              type: 'voice',
+              audioUrl: base64Audio,
+              audioDuration: duration,
+            })
           }
         }
       }
@@ -357,7 +522,8 @@ export default function ChatPage() {
     customText?: string,
     msgType: 'text' | 'image' | 'voice' | 'location' | 'file' | 'invoice' = 'text',
     targetChatId?: string,
-    overrideViewOnce?: boolean
+    overrideViewOnce?: boolean,
+    attachedMediaUrl?: string
   ) => {
     const chatToUse = targetChatId || selectedChat
     if (!chatToUse) return
@@ -373,6 +539,7 @@ export default function ChatPage() {
       text: messageContent || (msgType === 'voice' ? 'Voice note (0:08)' : 'Location shared'),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       type: msgType,
+      mediaUrl: attachedMediaUrl,
       isViewOnce: overrideViewOnce !== undefined ? overrideViewOnce : isViewOnceMode,
       viewed: false,
       replyToText: replyingToMsg ? replyingToMsg.text : undefined,
@@ -390,6 +557,21 @@ export default function ChatPage() {
           : c
       )
     )
+
+    // Broadcast in real-time
+    const realtimeMsg: RealtimeChatMessage = {
+      id: newMsg.id,
+      conversationId: chatToUse,
+      fromUserId: currentUserId,
+      fromUserName: currentDisplayName,
+      toUserId: chatToUse,
+      text: newMsg.text,
+      time: newMsg.time,
+      type: msgType,
+      mediaUrl: attachedMediaUrl,
+      isViewOnce: newMsg.isViewOnce,
+    }
+    realtimeSync.sendChatMessage(realtimeMsg)
 
     setInputMessage('')
     setReplyingToMsg(null)
@@ -412,6 +594,18 @@ export default function ChatPage() {
       ...prev,
       [selectedChat]: [...(prev[selectedChat] || []), invoiceMsg],
     }))
+
+    realtimeSync.sendChatMessage({
+      id: invoiceMsg.id,
+      conversationId: selectedChat,
+      fromUserId: currentUserId,
+      fromUserName: currentDisplayName,
+      toUserId: selectedChat,
+      text: invoiceMsg.text,
+      time: invoiceMsg.time,
+      type: 'invoice',
+      invoice: invoiceData,
+    })
   }
 
   const handleFileUploadInChat = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -420,20 +614,47 @@ export default function ChatPage() {
 
     soundService.playMessageSend()
     const isImg = file.type.startsWith('image/')
-    const newMsg: ChatMessage = {
-      id: `msg_file_${Date.now()}`,
-      sender: 'self',
-      text: isImg ? `🖼️ Mengirim foto: ${file.name}` : `📄 Mengirim dokumen: ${file.name}`,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      type: isImg ? 'image' : 'file',
-      mediaUrl: URL.createObjectURL(file),
-      fileName: file.name,
-    }
 
-    setMessages((prev) => ({
-      ...prev,
-      [selectedChat]: [...(prev[selectedChat] || []), newMsg],
-    }))
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64Data = reader.result as string
+      const newMsg: ChatMessage = {
+        id: `msg_file_${Date.now()}`,
+        sender: 'self',
+        text: isImg ? `🖼️ Mengirim foto: ${file.name}` : `📄 Mengirim dokumen: ${file.name}`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: isImg ? 'image' : 'file',
+        mediaUrl: base64Data,
+        fileName: file.name,
+      }
+
+      setMessages((prev) => ({
+        ...prev,
+        [selectedChat]: [...(prev[selectedChat] || []), newMsg],
+      }))
+
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === selectedChat
+            ? { ...c, lastMessage: newMsg.text, time: 'Now' }
+            : c
+        )
+      )
+
+      realtimeSync.sendChatMessage({
+        id: newMsg.id,
+        conversationId: selectedChat,
+        fromUserId: currentUserId,
+        fromUserName: currentDisplayName,
+        toUserId: selectedChat,
+        text: newMsg.text,
+        time: newMsg.time,
+        type: isImg ? 'image' : 'file',
+        mediaUrl: base64Data,
+        fileName: file.name,
+      })
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleOpenQuickCamera = (convoId: string, convoName: string) => {
@@ -462,7 +683,7 @@ export default function ChatPage() {
   const handleSendInChatSnap = () => {
     if (!selectedChat) return
     const captionText = snapCaption.trim() ? `📸 Foto ADLD: ${snapCaption.trim()}` : '📸 Foto Kamera ADLD'
-    handleSendMessage(captionText, 'image', selectedChat, isViewOnceMode)
+    handleSendMessage(captionText, 'image', selectedChat, isViewOnceMode, capturedSnapUrl || undefined)
 
     setIsInChatCameraOpen(false)
     setCapturedSnapUrl(null)
@@ -1158,6 +1379,68 @@ export default function ChatPage() {
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
+
+            {friendsList.length > 0 && (
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-emerald-400">
+                  Pilih Langsung dari Teman Anda:
+                </label>
+                <div className="max-h-44 overflow-y-auto space-y-1.5 hide-scrollbar pr-1">
+                  {friendsList.map((fr) => {
+                    const cleanFrUser = fr.username ? fr.username.replace('@', '').toLowerCase() : ''
+                    const frId = fr.id || (cleanFrUser ? `usr_${cleanFrUser}` : `fr_${Date.now()}`)
+                    return (
+                      <button
+                        key={fr.id || fr.username}
+                        type="button"
+                        onClick={() => {
+                          const exists = conversations.some((c) => c.id === frId || c.name === fr.name)
+                          if (!exists) {
+                            const newConvo: Conversation = {
+                              id: frId,
+                              name: fr.name || `@${cleanFrUser}`,
+                              lastMessage: 'Percakapan baru dimulai 👋',
+                              time: 'Now',
+                              online: fr.status === 'Online',
+                              streak: fr.streak || 1,
+                              unread: 0,
+                            }
+                            setConversations((prev) => [newConvo, ...prev])
+                          }
+                          setSelectedChat(frId)
+                          setIsNewChatModalOpen(false)
+                        }}
+                        className="w-full flex items-center gap-3 p-2 rounded-xl bg-zinc-900/60 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/30 transition-all text-left group"
+                      >
+                        <img
+                          src={fr.avatarUrl || '/avatars/male_1_clean.png'}
+                          alt={fr.name}
+                          className="w-8 h-8 rounded-full object-cover bg-zinc-900 border border-white/10"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-white group-hover:text-emerald-300 truncate">
+                            {fr.name}
+                          </p>
+                          <p className="text-[11px] text-zinc-400 truncate">
+                            {fr.username}
+                          </p>
+                        </div>
+                        <span className="material-symbols-outlined text-emerald-400 text-[18px]">
+                          chat
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="relative flex py-2 items-center">
+                  <div className="flex-grow border-t border-white/10"></div>
+                  <span className="flex-shrink mx-2 text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+                    Atau Ketik Nama / Username
+                  </span>
+                  <div className="flex-grow border-t border-white/10"></div>
+                </div>
+              </div>
+            )}
 
             <form
               onSubmit={(e) => {
